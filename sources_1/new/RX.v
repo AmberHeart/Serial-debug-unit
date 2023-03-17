@@ -26,7 +26,10 @@ module uart_rx(
     input rxd,
     input rdy_rx,
     output reg [7:0] d_rx,
-    output reg vld_rx
+    // output reg vld_rx
+    //RTS （Require ToSend，发送请求）为输出信号，用于指示本设备准备好可接收数据，
+    // 低电平有效，低电平说明本设备可以接收数据。
+    output rts
 );
 
 parameter TICKS_PER_BIT = 104; // assuming 100 MHz clock frequency
