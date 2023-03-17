@@ -21,15 +21,14 @@
 
 
 module uart_tx(
-    input clk_tx,
+    input clk_tx,//clk_tx是9600的波特率，不要直接传100MHZ
     input rst,
     input [7:0] d_tx,
-    input vld_tx,
-    output rdy_tx,
+    input vld_tx,//vld需要其他模块输入，可以理解为发送使能
+    output rdy_tx,//rdy只是遵循协议，其实PC不管这个
     output reg txd
 );
 
-parameter TICKS_PER_BIT = 104; // assuming 100 MHz clock frequency
 reg [8:0] SOR;
 reg [3:0] CNT;
 RDY rdy(
