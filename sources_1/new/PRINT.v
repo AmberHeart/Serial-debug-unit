@@ -1,5 +1,6 @@
 module PRINT(
     input clk_tx,
+    input rst,
     input [31:0] dout_tx,
     input type_tx, //0表示字节 1表示字
     input req_tx,
@@ -9,7 +10,12 @@ module PRINT(
     output reg ack_tx
 );
     reg [2:0] count; //一个字是四个字节，计数
-always @(posedge clk_tx) begin
+always @(posedge clk_tx or posedge rst) begin
+    if(rst) begin
+        count<=0;
+        ack_tx<=0;
+    end
+    else
     if(req_tx) begin
         if(type_tx==0) begin
             if(rdy_tx)begin
