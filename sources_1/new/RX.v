@@ -41,6 +41,7 @@ end
 always @(posedge clk or posedge rst) begin
     if(rst)begin
         d_rx<=0;
+        CNT<=0;
     end else if(process&&fr_div==0) begin
         if(CNT==16)begin//取样中点
             CNT<=0;
@@ -53,7 +54,6 @@ end
 always @(posedge clk or posedge rst) begin
     if(rst)begin
         CNTb<=0;
-        CNT<=0;
         vld_rx<=0;
     end else if (fr_div==0) begin
         if(CNT==16)begin//取样中数据还未被接受

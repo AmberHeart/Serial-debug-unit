@@ -4,11 +4,13 @@ module uart_echo(
     input clk,
     input reset,
     input rxd,
-    output txd
+    output txd,
+    output [7:0] word
 );
 wire vld_rx;
 wire [7:0] d_rx;
-RX rx(
+assign word = d_rx;
+uart_rx rx(
 /*
 input clk,//100MHZ
     input rst,
@@ -40,7 +42,7 @@ always @(posedge clk or posedge rst) begin
         fr_div<=fr_div+1;
     end
 end 
-TX tx(
+uart_tx tx(
     /*
     input clk_tx,//clk_tx是9600的波特率，不要直接传100MHZ
     input rst,

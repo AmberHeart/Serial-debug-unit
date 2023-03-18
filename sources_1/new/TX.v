@@ -21,7 +21,6 @@ RDY rdy(
 always @(posedge clk_tx or posedge rst) begin
     if(rst)begin
         CNT<=0;
-        SOR<=9'b1111_11111;
     end else begin
         if(CNT)begin
             CNT<=CNT-1;
@@ -34,6 +33,7 @@ always @(posedge clk_tx) begin
     if(rdy_tx&&vld_tx)begin
         SOR<={d_tx[7:0],1'b0};
         txd<=1'b0;
+        SOR<=9'b1111_11111;
     end
     else if(CNT)begin
         SOR<={1'b1,SOR[8:1]};

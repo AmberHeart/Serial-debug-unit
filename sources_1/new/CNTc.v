@@ -1,7 +1,8 @@
 `timescale 1ns / 1ps
 
 module CNTc(
-    input clk,fr_div,
+    input clk,
+    input [3:0]fr_div,
     input rst,
     input rxd,
     input vld_rx,
