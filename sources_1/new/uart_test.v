@@ -4,7 +4,7 @@ module uart_echo(
     input clk,
     input reset,
     input rxd,
-    output txd,
+    output txd
 );
 wire vld_rx;
 wire [7:0] d_rx;
