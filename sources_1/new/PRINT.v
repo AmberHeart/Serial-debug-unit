@@ -18,7 +18,7 @@ always @(*) begin
         else if(type_tx==1) begin
             if(rdy_tx) begin
                 if(count==0) begin
-                    d_tx=dout_tx[7:0];
+                    d_tx=dout_tx[7:0];///
                     count=count+1;
                 end
                 else if(count==1) begin
