@@ -36,6 +36,8 @@ always @(posedge clk) begin
     end
     else if(cnt)begin
         cnt<=cnt-1;
+    end else begin
+        word<=0;
     end
 end
 // uart_tx tx(
