@@ -29,6 +29,9 @@ uart_rx rx(
     .vld_rx(vld_rx)
 );
 always @(posedge clk) begin
+    if(reset)begin
+        word<=0;
+    end
     if(vld_rx)begin
         word<=d_rx;
         cnt<=32'h01ff_ffff;
