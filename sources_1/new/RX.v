@@ -9,7 +9,7 @@ module uart_rx(
     output reg vld_rx   //1 indicates that data has been received and is waiting for other modules to take it away
 );
 
-parameter TICKS_PER_BIT = 5207; // assuming 100 MHz clock frequency
+parameter TICKS_PER_BIT = 7; // assuming 100 MHz clock frequency
 reg [15:0] CNT;
 // reg[3:0] fr_div;//分频器
 reg [3:0] CNTb;

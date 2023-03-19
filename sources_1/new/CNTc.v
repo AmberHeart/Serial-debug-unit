@@ -8,7 +8,7 @@ module CNTc(
     output reg process
     );
     reg [15:0] cnt;
-    parameter SAMPLING_TICK = 2603;
+    parameter SAMPLING_TICK = 3;
     always @(posedge clk or posedge rst) begin
         if(rst || vld_rx)begin
             process<=0;

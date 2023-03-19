@@ -40,7 +40,7 @@ initial begin
     rst=1;
     #1;
     rst=0;
-    #5;
+    #30;
     rxd=0;//0
     #16;
     rxd=1;//1
