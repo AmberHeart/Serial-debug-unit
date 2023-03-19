@@ -12,7 +12,6 @@ wire vld_rx;
 wire [7:0] d_rx;
 reg  [31:0] cnt;
 // assign word=btn;
-wire  vld_rx;
 uart_rx rx(
     /*
     input clk,//100MHZ
