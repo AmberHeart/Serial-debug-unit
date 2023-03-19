@@ -32,7 +32,7 @@ uart_rx rx(
 always @(posedge clk) begin
     if(vld_rx)begin
         word<=d_rx;
-        cnt<=32'h1fff_ffff;
+        cnt<=32'h007f_ffff;
     end
     else if(cnt)begin
         cnt<=cnt-1;
