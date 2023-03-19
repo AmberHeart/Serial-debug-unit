@@ -4,9 +4,9 @@ module uart_rx(
     input clk,//100MHZ
     input rst,
     input rxd,
-    input rdy_rx,//其他模块输入，1表示可以接受新数据,0表示正在接收
+    input rdy_rx,//1 means ready to accept new data, 0 otherwise.
     output reg [7:0] d_rx,
-    output reg vld_rx   //1提示数据已经接收,等待其他模块拿走
+    output reg vld_rx   //1 indicates that data has been received and is waiting for other modules to take it away
 );
 
 parameter TICKS_PER_BIT = 5207; // assuming 100 MHz clock frequency

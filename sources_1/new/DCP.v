@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 
 // Debug Command Processing
-module DCP#(parameter CONTROL_STATUS = 32;)(
+module DCP#(parameter CONTROL_STATUS = 32)(
     input clk,
     input rst,
     //uart_tx
