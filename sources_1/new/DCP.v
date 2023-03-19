@@ -28,7 +28,7 @@ module DCP#(parameter CONTROL_STATUS = 32)(
     // input [31:0] SP, // stack pointer
     //cpu_status:register file
     output [31:0] addr, // register file address(also used as memory address)
-    input dout_rf, // register file data output
+    input [31:0] dout_rf, // register file data output
     //cpu_status:Memory
     input [31:0] dout_dm, // data memory data output
     input [31:0] dout_im, // instruction memory data output
