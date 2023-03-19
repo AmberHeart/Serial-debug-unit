@@ -37,13 +37,13 @@ uart_rx rx(
 initial begin
     clk=0;rst=0;rxd=1;
     #1;
-    rst=1;
+    rst=1;rxd=1;
     #1;
-    rst=0;
-    #30;
+    rst=0;rxd=1;
+    #170;
     rxd=0;//0
     #16;
-    rxd=1;//1
+    rxd=0;//1
     #16;
     rxd=1;//2
     #16;
@@ -57,7 +57,27 @@ initial begin
     #16;
     rxd=0;//7
     #16;
-    rxd=0;//8
+    rxd=1;//8
+    #16;
+    rxd=1;//rst
+    #30;
+    rxd=0;//0
+    #16;
+    rxd=0;//1
+    #16;
+    rxd=1;//2
+    #16;
+    rxd=1;//3
+    #16;
+    rxd=1;//4
+    #16;
+    rxd=1;//5
+    #16;
+    rxd=1;//6
+    #16;
+    rxd=0;//7
+    #16;
+    rxd=1;//8
     #16;
     rxd=1;//rst
 end
