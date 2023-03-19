@@ -30,12 +30,17 @@ uart_rx rx(
     .vld_rx(vld_rx)
 );
 always @(posedge clk) begin
+    if(reset)begin
+        word<=0;
+    end
     if(vld_rx)begin
         word<=d_rx;
-        cnt<=32'h1fff_ffff;
+        cnt<=32'h007f_ffff;
     end
     else if(cnt)begin
         cnt<=cnt-1;
+    end else begin
+        word<=0;
     end
 end
 // uart_tx tx(
