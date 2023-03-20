@@ -12,7 +12,6 @@ wire vld_rx;
 wire [7:0] d_rx;
 reg  [31:0] cnt;
 // assign word=btn;
-wire  vld_rx;
 uart_rx rx(
     /*
     input clk,//100MHZ
@@ -30,6 +29,9 @@ uart_rx rx(
     .vld_rx(vld_rx)
 );
 always @(posedge clk) begin
+    if(reset)begin
+        word<=0;
+    end
     if(vld_rx)begin
         word<=d_rx;
         cnt<=32'h01ff_ffff;
