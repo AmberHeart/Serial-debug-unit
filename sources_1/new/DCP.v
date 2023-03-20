@@ -4,14 +4,14 @@
 module DCP#(parameter CONTROL_STATUS = 32)(
     input clk,
     input rst,
-    //uart_tx
-    input [7:0] d_tx,
-    input vld_tx,
-    output rdy_tx,
     //uart_rx
-    input rdy_rx,
-    output reg [7:0] d_rx,
-    output reg vld_rx,
+    input [7:0] d_rx,
+    input vld_rx,
+    output rdy_rx,
+    //uart_tx
+    input rdy_tx,
+    output reg [7:0] d_tx,
+    output reg vld_tx,
     //cpu_control
     output clk_cpu, //cpu working clock
     input pc_chk, // check current pc 
@@ -38,5 +38,40 @@ module DCP#(parameter CONTROL_STATUS = 32)(
     output we_dm, // write data enable
     output we_im  // load instruction enable
 );
-
+    //DCP states: 0 - scan 1 - busy 
+    reg CS, NS;
+    always @(posedge clk) begin
+        if(rst) CS <= 0;
+        else CS <= NS;
+    end
+    
+    reg [7:0] cmd; //command
+    /*
+    TO BE DONE: scan the command and set NS to 1
+    */
+    
+    reg busy, finish;
+    
+    always@(*)
+        case(CS)
+            0: begin
+                busy = 0;
+                finish = 0;
+                if(vld_rx) NS = 1;  //recieve a command
+                else NS = 0;
+            end
+            1: begin
+                busy = 1;
+                if(finish) NS = 0;  //finish a command
+                else NS = 1;
+            end
+            default: begin
+                busy = 0;
+                NS = 0;
+                finish = 0;
+            end
+        endcase
+    //command processing
+    
+    
 endmodule
