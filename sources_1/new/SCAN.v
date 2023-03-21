@@ -96,7 +96,7 @@ module SCAN(
             end
             else
             begin
-                if(cnt == 1 && din_rx[15:0] == 16'h0a0d) // if the first two bytes are 0a0d, then it is a new line
+                if(cnt == 1 && din_rx[15:0] == 16'h0d0a) // if the first two bytes are 0d0a, then it is a new line
                     next_state <= SEND;
                 else
                     next_state <= ADDR;  
