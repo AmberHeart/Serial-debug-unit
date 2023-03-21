@@ -114,7 +114,7 @@ module SCAN(
             begin
                 ack_rx <= 1;
                 next_state <= IDLE;
-                if(din_rx[15:0] == 16'h0a0d) 
+                if(din_rx[15:0] == 16'h0d0a) 
                     flag_rx <= 1; // empty address
                 else
                     flag_rx <= 0; // clear flag
