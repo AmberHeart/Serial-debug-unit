@@ -38,9 +38,9 @@ module SCAN(
     parameter SEND = 2'b11; // send data
     reg [1:0] curr_state;
     reg [1:0] next_state;
-    always@(posedge clk or negedge rstn)
+    always@(posedge clk or posedge rst)
     begin
-        if(!rstn)
+        if(rst)
             curr_state <= IDLE;
         else
             curr_state <= next_state;
