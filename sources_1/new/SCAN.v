@@ -22,15 +22,15 @@
 
 module SCAN(
     input clk,
-    input rstn,
+    input rst,
     input [7:0] d_rx,
-    input vld_rx,
-    output reg rdy_rx,
-    input type_rx,
-    input req_rx,
-    output reg flag_rx,
-    output reg ack_rx,
-    output reg [31:0] din_rx 
+    input vld_rx,   
+    output reg rdy_rx,  // 0 - not ready, 1 - ready
+    input type_rx,  // 0 - byte, 1 - word
+    input req_rx,   // 0 - no request, 1 - request
+    output reg flag_rx, // 0 - no error, 1 - error
+    output reg ack_rx,  // 0 - not acknowledge, 1 - acknowledge
+    output reg [31:0] din_rx   
     );
     parameter IDLE = 2'b00; // wait for request
     parameter BYTE = 2'b01; // request a btye

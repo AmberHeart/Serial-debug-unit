@@ -4,6 +4,8 @@
 module DCP_P#(parameter CONTROL_STATUS = 32)(
     input clk,
     input rst,
+    input we,
+    output finish,
     input [31:0] PC, // current pc
     input [31:0] nPC, //next pc
     input [31:0] IR, // instruction
@@ -14,9 +16,8 @@ module DCP_P#(parameter CONTROL_STATUS = 32)(
     input [31:0] MDR, // memory data
     // input [31:0] MAR, // memory address
     // input [31:0] SP, // stack pointer
-    input enable,
-    output finish,
     //print
+    input rdy_tx,
     output reg vld_tx,
     output reg [7:0] d_tx
 );
