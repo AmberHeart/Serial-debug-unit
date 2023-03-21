@@ -9,16 +9,30 @@ module PRINT(
     output reg ack_tx
 );
     reg [1:0] count; //count for how many Bytes left to send
-    wire req_tx_ps;
+    wire req_tx_ps; //positive edge selector for req_tx
 
+    //finite state machine
     parameter [1:0] PRINT_INIT = 0,
                     PRINT_BYTE = 1,
                     PRINT_WORD = 2,
                     PRINT_WAIT = 3;
     reg [1:0] Print_State = PRINT_INIT;
+
+    //h2c module variables
+    wire [63:0] dout;
+
     Posedge_Selector(
         .clk(clk), .rstn(rst), .in(req_tx),
         .out(req_tx_ps)
+    );
+
+    h2c hextochar (
+        .clka(clk),    // input wire clka
+        .addra(dout_tx[31:16]),  // input wire [15 : 0] addra
+        .douta(dout[63:32]),  // output wire [31 : 0] douta
+        .clkb(clk),    // input wire clkb
+        .addrb(dout_tx[15:0]),  // input wire [15 : 0] addrb
+        .doutb(dout[31:0])  // output wire [31 : 0] doutb
     );
 
     always @(posedge clk or posedge rst) begin
