@@ -59,12 +59,13 @@ module DCP_P#(parameter CONTROL_STATUS = 32)(
     reg [15:0] ASCII_A;
     reg [15:0] ASCII_B;
     reg [15:0] ASCII_Y;
-    
+    reg type;
+    reg req;
     //state machine
     always @(posedge clk)begin
         if(rst)begin
             CS <= 0;
-            NS <= 0
+            NS <= 0;
         end
         else begin
             CS <= NS;
@@ -100,6 +101,7 @@ module DCP_P#(parameter CONTROL_STATUS = 32)(
                 req <= 1;
                 
             end
+        endcase
     end
 
 
@@ -111,8 +113,8 @@ module DCP_P#(parameter CONTROL_STATUS = 32)(
         .req_tx(req_tx),
         .ack_tx(ack_tx),
         .vld_tx(vld_tx),
-        .rdy_tx(rdy_tx)
+        .rdy_tx(rdy_tx),
         .d_tx(d_tx)
-    )
+    );
 
 endmodule
