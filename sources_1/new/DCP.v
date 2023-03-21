@@ -49,12 +49,6 @@ module DCP#(parameter CONTROL_STATUS = 32)(
     parameter CMD_H = 72; //H
     parameter CMD_L = 76; //L
 
-    //DCP states: 0 - scan 1 - busy 
-    reg CS, NS;
-    always @(posedge clk) begin
-        if(rst) CS <= 0;
-        else CS <= NS;
-    end
     
     reg busy, finish;
     reg [7:0] cmd; //command
@@ -75,6 +69,16 @@ module DCP#(parameter CONTROL_STATUS = 32)(
         .din_rx({24'b0, cmd})
     );
     
+    //DCP states: 0 - scan 1 - busy 
+    reg CS, NS;
+    always @(posedge clk) begin
+        if(rst)begin
+            CS <= 0;
+            NS <= 0;
+        end
+        else CS <= NS;
+    end
+
     always@(*)
         case(CS)
             0: begin
@@ -99,15 +103,15 @@ module DCP#(parameter CONTROL_STATUS = 32)(
     //command process:choose a command module judge by cmd
     always@(*)
         case(cmd)
-            CMD_P: we_P = 1'b1;
-            CMD_R: we_R = 1'b1;
-            CMD_D: we_D = 1'b1;
-            CMD_I: we_I = 1'b1;
-            CMD_T: we_T = 1'b1;
-            CMD_B: we_B = 1'b1;
-            CMD_G: we_G = 1'b1;
-            CMD_H: we_H = 1'b1;
-            CMD_L: we_L = 1'b1;
+            CMD_P: we_P = 1'b1 && busy;
+            CMD_R: we_R = 1'b1 && busy;
+            CMD_D: we_D = 1'b1 && busy;
+            CMD_I: we_I = 1'b1 && busy;
+            CMD_T: we_T = 1'b1 && busy;
+            CMD_B: we_B = 1'b1 && busy;
+            CMD_G: we_G = 1'b1 && busy;
+            CMD_H: we_H = 1'b1 && busy;
+            CMD_L: we_L = 1'b1 && busy;
             default: begin
                 we_P = 1'b0;
                 we_R = 1'b0;
