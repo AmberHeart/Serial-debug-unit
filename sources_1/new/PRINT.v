@@ -15,7 +15,7 @@ module PRINT(
                     PRINT_BYTE = 1,
                     PRINT_WORD = 2,
                     PRINT_WAIT = 3;
-    reg Print_State = PRINT_INIT;
+    reg [1:0] Print_State = PRINT_INIT;
     Posedge_Selector(
         .clk(clk), .rstn(rst), .in(req_tx),
         .out(req_tx_ps)
