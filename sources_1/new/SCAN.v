@@ -22,7 +22,7 @@
 
 module SCAN(
     input clk,
-    input rstn,
+    input rst,
     input [7:0] d_rx,
     input vld_rx,
     output reg rdy_rx,
@@ -56,9 +56,9 @@ module SCAN(
         else
             C2H = 8'h000000;
     end
-    always@(posedge clk or negedge rstn)
+    always@(posedge clk or posedge rst)
     begin
-        if(!rstn)
+        if(rst)
             curr_state <= IDLE;
         else
             curr_state <= next_state;
