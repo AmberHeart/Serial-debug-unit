@@ -8,7 +8,8 @@ module PRINT(
     output reg [7:0] d_tx,
     output reg ack_tx
 );
-    reg [1:0] count; //count for how many Bytes left to send
+    reg [2:0] count = 0; //count for how many Bytes left to send
+    reg underline = 1;  //whether to output the underline
     wire req_tx_ps; //positive edge selector for req_tx
 
     //finite state machine
@@ -76,10 +77,23 @@ always @(posedge clk) begin
             ack_tx <= 0;
             count <= count - 1;
             case (count)
-                0: d_tx <= dout_tx[31:24];
-                3: d_tx <= dout_tx[23:16];
-                2: d_tx <= dout_tx[15:8];
-                1: d_tx <= dout_tx[7:0];
+                0: d_tx <= dout[63:56];
+                7: d_tx <= dout[55:48];
+                6: d_tx <= dout[47:40];
+                5: d_tx <= dout[39:32];
+                4: begin 
+                    if (underline) begin
+                        d_tx <= 8'h5F;
+                        underline <= 0;
+                    end
+                    else begin
+                        d_tx <= dout[31:24];
+                        underline <= 1;
+                    end
+                end
+                3: d_tx <= dout[23:16];
+                2: d_tx <= dout[15:8];
+                1: d_tx <= dout[7:0];
             endcase
         end
         PRINT_WAIT: begin
