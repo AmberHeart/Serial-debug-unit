@@ -6,11 +6,11 @@ module uart_tx(
     input [7:0] d_tx,
     input vld_tx,//vld需要其他模块输入，可以理解为发送使能
     output rdy_tx,//rdy只是遵循协议，其实PC不管这个
-    output reg txd,
-    output reg [3:0] CNT,
-    output reg [15:0] fr_div
+    output reg txd
 );
 
+reg [3:0] CNT;
+reg [15:0] fr_div;
 reg [8:0] SOR;
 // reg [3:0] CNT;
 parameter TICKS_PER_BIT = 10417; 
