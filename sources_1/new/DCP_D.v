@@ -8,6 +8,7 @@ module DCP_D(
     output [31:0] end_addr, //the address of the last data when look up this time 
     input [7:0] d_rx,
     input rdy_tx,
+    input vld_rx,
     output vld_tx,
     output rdy_rx,
     output [7:0] d_tx
@@ -89,6 +90,9 @@ module DCP_D(
             PRINTA: begin
                 if (vld_tx && rdy_tx) NS = DATA;
                 else NS = PRINTA;
+            end
+            DATA: begin
+                
             end
             PRINTD: begin
                 if(memory_rdy) NS = FINISH;

@@ -213,6 +213,7 @@ module DCP#(parameter CONTROL_STATUS = 32)(
         .vld_tx(vld_tx_D),
         .rdy_rx(rdy_rx_D),
         .d_rx(d_rx),
+        .vld_rx(vld_rx),
         .d_tx(d_tx_D)
     );
 
