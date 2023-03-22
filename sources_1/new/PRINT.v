@@ -22,7 +22,7 @@ module PRINT(
     //h2c module variables
     wire [63:0] dout;
 
-    Posedge_Selector(
+    Posedge_Selector ps(
         .clk(clk), .rst(rst), .in(req_tx),
         .out(req_tx_ps)
     );
