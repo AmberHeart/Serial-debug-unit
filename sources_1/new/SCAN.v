@@ -38,9 +38,9 @@ module SCAN(
     parameter SEND = 2'b11; // send data
     reg [1:0] curr_state;
     reg [1:0] next_state;
-    always@(posedge clk or negedge rstn)
+    always@(posedge clk or posedge rst)
     begin
-        if(!rstn)
+        if(rst)
             curr_state <= IDLE;
         else
             curr_state <= next_state;
@@ -96,7 +96,7 @@ module SCAN(
             end
             else
             begin
-                if(cnt == 1 && din_rx[15:0] == 16'h0a0d) // if the first two bytes are 0a0d, then it is a new line
+                if(cnt == 1 && din_rx[15:0] == 16'h0d0a) // if the first two bytes are 0d0a, then it is a new line
                     next_state <= SEND;
                 else
                     next_state <= ADDR;  
@@ -114,7 +114,7 @@ module SCAN(
             begin
                 ack_rx <= 1;
                 next_state <= IDLE;
-                if(din_rx[15:0] == 16'h0a0d) 
+                if(din_rx[15:0] == 16'h0d0a) 
                     flag_rx <= 1; // empty address
                 else
                     flag_rx <= 0; // clear flag

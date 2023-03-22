@@ -1,10 +1,10 @@
 module Posedge_Selector(
-    input clk, rstn, in,
+    input clk, rst, in,
     output reg out
     );
     reg last;
-    always @(posedge clk, negedge rstn) begin
-        if (!rstn) out <= 0;
+    always @(posedge clk, posedge rst) begin
+        if (rst) out <= 0;
         else begin
             out <= in & !last;
             last <= in;

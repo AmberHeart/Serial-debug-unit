@@ -23,7 +23,7 @@ module PRINT(
     wire [63:0] dout;
 
     Posedge_Selector(
-        .clk(clk), .rstn(rst), .in(req_tx),
+        .clk(clk), .rst(rst), .in(req_tx),
         .out(req_tx_ps)
     );
 
