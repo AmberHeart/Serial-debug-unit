@@ -7,7 +7,7 @@ module DCP#(parameter CONTROL_STATUS = 32)(
     //uart_rx
     input [7:0] d_rx,
     input vld_rx,
-    output rdy_rx,
+    output reg rdy_rx,
     //uart_tx
     input rdy_tx,
     output reg [7:0] d_tx,
@@ -54,6 +54,60 @@ module DCP#(parameter CONTROL_STATUS = 32)(
     reg [7:0] cmd; //command
     reg flag_cmd, ack_cmd; //acknowledge command
     reg we_P, we_R, we_D, we_I, we_T, we_B, we_G, we_H, we_L;
+    
+    //switch signals (d_rx, vld_rx, rdy_tx directly attached to RX/TX)
+    wire [7:0] d_tx_D, d_tx_I, d_tx_T, d_tx_B, d_tx_G, d_tx_P, d_tx_R;
+    wire vld_tx_D, vld_tx_I, vld_tx_T, vld_tx_B, vld_tx_G, vld_tx_P, vld_tx_R;
+    wire rdy_rx_D, rdy_rx_I, rdy_rx_T, rdy_rx_B, rdy_rx_G, rdy_rx_P, rdy_rx_R, rdy_rx_DCP;
+    assign vld_tx_P = 0;
+//switch
+    always @(*) begin
+        if (~busy) begin
+            rdy_rx = rdy_rx_DCP;
+            d_tx = 0;
+            vld_tx = 0;
+        end
+        else if (we_D) begin
+            rdy_rx = rdy_rx_D;
+            d_tx = d_tx_D;
+            vld_tx = vld_tx_D;
+        end
+        else if (we_I) begin
+            rdy_rx = rdy_rx_I;
+            d_tx = d_tx_I;
+            vld_tx = vld_tx_I;
+        end
+        else if (we_T) begin
+            rdy_rx = rdy_rx_T;
+            d_tx = d_tx_T;
+            vld_tx = vld_tx_T;
+        end
+        else if (we_B) begin
+            rdy_rx = rdy_rx_B;
+            d_tx = d_tx_B;
+            vld_tx = vld_tx_B;
+        end
+        else if (we_G) begin
+            rdy_rx = rdy_rx_G;
+            d_tx = d_tx_G;
+            vld_tx = vld_tx_G;
+        end
+        else if (we_P) begin
+            rdy_rx = rdy_rx_P;
+            d_tx = d_tx_P;
+            vld_tx = vld_tx_P;
+        end
+        else if (we_R) begin
+            rdy_rx = rdy_rx_R;
+            d_tx = d_tx_R;
+            vld_tx = vld_tx_R;
+        end
+        else begin
+            rdy_rx = 0;
+            d_tx = 0;
+            vld_tx = 0;
+        end
+    end
 
     //scan a command
     SCAN SCAN_CMD(
@@ -61,7 +115,7 @@ module DCP#(parameter CONTROL_STATUS = 32)(
         .rst(rst),
         .d_rx(d_rx),
         .vld_rx(vld_rx),
-        .rdy_rx(rdy_rx),
+        .rdy_rx(rdy_rx_DCP),
         .type_rx(1'b0),
         .req_rx(!busy),
         .flag_rx(flag_cmd),
@@ -139,8 +193,27 @@ module DCP#(parameter CONTROL_STATUS = 32)(
         .Y(Y),
         .MDR(MDR),
         .rdy_tx(rdy_tx),
-        .vld_tx(vld_tx),
-        .d_tx(d_tx)
+        .vld_tx(vld_tx_P),
+        .d_tx(d_tx_P)
+    );
+
+    //DCP_D signals
+
+    reg [31:0] last_addr = 0;
+    wire [31:0] end_addr;
+
+    DCP_D DCP_d(
+        .clk(clk),
+        .rst(rst),
+        .we(we_D),
+        .finish(finish),
+        .last_addr(last_addr),
+        .end_addr(end_addr),
+        .rdy_tx(rdy_tx),
+        .vld_tx(vld_tx_D),
+        .rdy_rx(rdy_rx_D),
+        .d_rx(d_rx),
+        .d_tx(d_tx_D)
     );
 
     

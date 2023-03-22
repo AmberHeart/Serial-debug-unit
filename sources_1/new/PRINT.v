@@ -1,12 +1,12 @@
 module PRINT(
     input clk, rst,
-    input [31:0] dout_tx,
-    input type_tx, //0 stand for Byte, 1 stand for Word
-    input req_tx, 
-    input rdy_tx,
-    output reg vld_tx,
-    output reg [7:0] d_tx,
-    output reg ack_tx
+    input [31:0] dout_tx,  //data to be printed (from DCP)
+    input type_tx,  //0 stand for Byte, 1 stand for Word (from DCP)
+    input req_tx,   //request to send (from DCP)
+    input rdy_tx,   //ready to send (from tx)
+    output reg vld_tx,  //valid to send (to tx)
+    output reg [7:0] d_tx,  //data to send (to tx)
+    output reg ack_tx   //acknowledge to send (to DCP)
 );
     reg [2:0] count = 0; //count for how many Bytes left to send
     reg underline = 1;  //whether to output the underline
