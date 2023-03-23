@@ -27,7 +27,7 @@ module DCP#(parameter CONTROL_STATUS = 32)(
     // input [31:0] MAR, // memory address
     // input [31:0] SP, // stack pointer
     //cpu_status:register file
-    output [31:0] addr, // register file address(also used as memory address)
+    output reg [31:0] addr, // register file address(also used as memory address)
     input [31:0] dout_rf, // register file data output
     //cpu_status:Memory
     input [31:0] dout_dm, // data memory data output
@@ -60,6 +60,8 @@ module DCP#(parameter CONTROL_STATUS = 32)(
     wire vld_tx_D, vld_tx_I, vld_tx_T, vld_tx_B, vld_tx_G, vld_tx_P, vld_tx_R;
     wire rdy_rx_D, rdy_rx_I, rdy_rx_T, rdy_rx_B, rdy_rx_G, rdy_rx_P, rdy_rx_R, rdy_rx_DCP;
     assign vld_tx_P = 0;
+    wire [31:0] addr_D, addr_I, addr_T, addr_B, addr_G, addr_P, addr_R;
+    
 //switch
     always @(*) begin
         if (~busy) begin
@@ -71,6 +73,7 @@ module DCP#(parameter CONTROL_STATUS = 32)(
             rdy_rx = rdy_rx_D;
             d_tx = d_tx_D;
             vld_tx = vld_tx_D;
+            addr = addr_D;
         end
         else if (we_I) begin
             rdy_rx = rdy_rx_I;
@@ -202,11 +205,13 @@ module DCP#(parameter CONTROL_STATUS = 32)(
     reg [31:0] last_addr = 0;
     wire [31:0] end_addr;
 
-    DCP_D DCP_d(
+    DCP_D DCP_d(// TO BE DONE
         .clk(clk),
         .rst(rst),
         .we(we_D),
         .finish(finish),
+        .addr(addr_D),
+        .dout_dm(dout_dm),
         .last_addr(last_addr),
         .end_addr(end_addr),
         .rdy_tx(rdy_tx),
