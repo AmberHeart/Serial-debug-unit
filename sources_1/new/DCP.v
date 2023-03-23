@@ -61,7 +61,8 @@ module DCP#(parameter CONTROL_STATUS = 32)(
     wire rdy_rx_D, rdy_rx_I, rdy_rx_T, rdy_rx_B, rdy_rx_G, rdy_rx_P, rdy_rx_R, rdy_rx_DCP;
     assign vld_tx_P = 0;
     wire [31:0] addr_D, addr_I, addr_T, addr_B, addr_G, addr_P, addr_R;
-    
+    reg [31:0] last_addr_D = 0;
+    wire [31:0] end_addr_D;
 //switch
     always @(*) begin
         if (~busy) begin
@@ -79,6 +80,7 @@ module DCP#(parameter CONTROL_STATUS = 32)(
             rdy_rx = rdy_rx_I;
             d_tx = d_tx_I;
             vld_tx = vld_tx_I;
+            addr = addr_I;
         end
         else if (we_T) begin
             rdy_rx = rdy_rx_T;
@@ -133,7 +135,9 @@ module DCP#(parameter CONTROL_STATUS = 32)(
             CS <= 0;
             NS <= 0;
         end
-        else CS <= NS;
+        else begin 
+            CS <= NS;
+        end
     end
 
     always@(*)
@@ -148,7 +152,10 @@ module DCP#(parameter CONTROL_STATUS = 32)(
                 busy = 1;
                 ack_cmd = 0;
                 flag_cmd = 0;
-                if(finish) NS = 0;  //finish a command
+                if(finish) begin
+                    if(cmd == CMD_D) last_addr_D = end_addr_D; 
+                    NS = 0;  //finish a command
+                end
                 else NS = 1;
             end
             default: begin
@@ -202,8 +209,7 @@ module DCP#(parameter CONTROL_STATUS = 32)(
 
     //DCP_D signals
 
-    reg [31:0] last_addr = 0;
-    wire [31:0] end_addr;
+    
 
     DCP_D DCP_d(// TO BE DONE
         .clk(clk),
@@ -212,15 +218,16 @@ module DCP#(parameter CONTROL_STATUS = 32)(
         .finish(finish),
         .addr(addr_D),
         .dout_dm(dout_dm),
-        .last_addr(last_addr),
-        .end_addr(end_addr),
+        .last_addr_D(last_addr_D),
+        .end_addr_D(end_addr_D),
         .rdy_tx(rdy_tx),
         .vld_tx(vld_tx_D),
         .rdy_rx(rdy_rx_D),
         .d_rx(d_rx),
         .vld_rx(vld_rx),
-        .d_tx(d_tx_D)
+        .d_tx(d_tx_I)
     );
+   
 
     
 endmodule
