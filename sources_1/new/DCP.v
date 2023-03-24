@@ -51,8 +51,8 @@ module DCP#(parameter CONTROL_STATUS = 32)(
 
     
     reg busy, finish;
-    reg [7:0] cmd; //command
-    reg flag_cmd, ack_cmd; //acknowledge command
+    wire [7:0] cmd; //command
+    wire flag_cmd, ack_cmd; //acknowledge command
     reg we_P, we_R, we_D, we_I, we_T, we_B, we_G, we_H, we_L;
     
     //switch signals (d_rx, vld_rx, rdy_tx directly attached to RX/TX)
@@ -63,6 +63,8 @@ module DCP#(parameter CONTROL_STATUS = 32)(
     wire [31:0] addr_D, addr_I, addr_T, addr_B, addr_G, addr_P, addr_R;
     reg [31:0] last_addr_D = 0;
     wire [31:0] end_addr_D;
+
+
 //switch
     always @(*) begin
         if (~busy) begin
@@ -150,8 +152,8 @@ module DCP#(parameter CONTROL_STATUS = 32)(
             end
             1: begin
                 busy = 1;
-                ack_cmd = 0;
-                flag_cmd = 0;
+                //ack_cmd = 0;
+                //flag_cmd = 0;
                 if(finish) begin
                     if(cmd == CMD_D) last_addr_D = end_addr_D; 
                     NS = 0;  //finish a command
@@ -225,7 +227,7 @@ module DCP#(parameter CONTROL_STATUS = 32)(
         .rdy_rx(rdy_rx_D),
         .d_rx(d_rx),
         .vld_rx(vld_rx),
-        .d_tx(d_tx_I)
+        .d_tx(d_tx_D)
     );
    
 
