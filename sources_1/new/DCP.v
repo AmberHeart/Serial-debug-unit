@@ -22,7 +22,7 @@
 
 module DCP(
     input clk,
-    input rst,
+    input rstn,
     input d_rx,
     input vld_rx,
     output reg rdy_rx,
@@ -48,7 +48,7 @@ module DCP(
     wire flag_rx,ack_rx;
     wire [31:0] din_rx;
     SCAN(
-        .clk(clk), .rst(rst),
+        .clk(clk), .rstn(rstn),
         .d_rx(d_rx),
         .vld_rx(vld_rx),   .rdy_rx(rdy_rx),
         .type_rx(type_rx), .req_rx(req_rx),
@@ -59,7 +59,7 @@ module DCP(
     reg [31:0] dout_tx;
     wire ack_tx;
     PRINT(
-        .clk(clk), .rst(rst),
+        .clk(clk), .rstn(rstn),
         .d_tx(d_tx),
         .vld_tx(vld_tx),   .rdy_tx(rdy_tx),
         .type_tx(type_tx), .req_tx(req_tx),
@@ -94,9 +94,9 @@ module DCP(
     parameter CMD_LD = 8'h64; //
 
     // current state <= next state
-    always@(posedge clk or posedge rst)
+    always@(posedge clk or negedge rstn)
     begin
-        if(rst)
+        if(!rstn)
             curr_state <= INIT;
         else    
             curr_state <= next_state;
@@ -109,16 +109,17 @@ module DCP(
             REQ_1ST: begin
                 if(ack_rx == 1)
                 begin
-                    case(din_rx)
+                    /*case(din_rx)
                         CMD_P: next_state = CMD_P;
                         CMD_D: next_state = CMD_D;
                         default: next_state = REQ_1ST;
-                    endcase
+                    endcase*/
+                    next_state = WAIT;
                 end
                 else
                     next_state = REQ_1ST;             
             end
-            CMD_D: next_state = WAIT;
+            //CMD_D: next_state = WAIT;
             WAIT: begin
                 if(finish) //finish is a signal from child module
                     next_state = INIT;
@@ -129,22 +130,29 @@ module DCP(
         endcase
     end
     //output <= g(current state,input)
-    reg req_SCAN_1ST;
-    reg type_SCAN_1ST;
+    reg req_rx_1ST;
+    reg type_rx_1ST;
     always@(posedge clk)
     begin
         if(curr_state == INIT)
         begin
             //do something to initialize
-            sel_mode = INIT;
+            sel_mode <= INIT;
+            req_rx_1ST <= 0;
+            type_rx_1ST <= 0;
         end
         else if(curr_state == REQ_1ST)
         begin
-            req_SCAN_1ST <= 1;
-            type_SCAN_1ST <= 0;
+            req_rx_1ST <= 1;
+            type_rx_1ST <= 0;
+            if(ack_rx == 1)
+            begin
+                case(din_rx[7:0])  //read first character
+                    CMD_D: sel_mode <= CMD_D;
+                    default: sel_mode <= INIT;
+                endcase
+            end
         end
-        else if(curr_state == CMD_D)
-            sel_mode <= CMD_D;
         else if(curr_state == WAIT)
             ;
         else
@@ -178,13 +186,13 @@ module DCP(
     begin
         case(sel_mode)
             INIT: begin
-                req_tx = req_SCAN_1ST;
-                type_tx = type_SCAN_1ST;
+                req_rx = req_rx_1ST;
+                type_rx = type_rx_1ST;
                 req_tx = 0;
                 type_tx = 0;
                 dout_tx = 32'h0000_0000;
                 addr = 32'h0000_0000;
-                finish = 0;
+                finish = 1;
             end
             CMD_D: begin
                 req_rx = req_rx_D;
