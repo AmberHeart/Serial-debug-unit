@@ -189,7 +189,7 @@ module DCP#(parameter CONTROL_STATUS = 32)(
             end
         endcase
     //command module
-    DCP_P DCP_P(
+    /*DCP_P DCP_P(
         .clk(clk),
         .rst(rst),
         .we(we_P),
@@ -205,7 +205,7 @@ module DCP#(parameter CONTROL_STATUS = 32)(
         .rdy_tx(rdy_tx),
         .vld_tx(vld_tx_P),
         .d_tx(d_tx_P)
-    );
+    );*/
 
     //DCP_D signals
 
