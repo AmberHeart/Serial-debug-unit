@@ -3,16 +3,16 @@
 module print_tb(
 
 );
-    reg clk;
+    reg clk = 0;
     always #1 clk = ~clk;
     
 
     wire vld_tx, ack_tx;
     wire [7:0] d_tx;
     reg [31:0] dout_tx = 31'h00000031;
-    reg type_tx = 0, req_tx, rdy_tx = 1;
+    reg type_tx = 0, req_tx = 0, rdy_tx = 1;
     PRINT print_D(
-        .clk(clk), .rst(rst),
+        .clk(clk), .rst(0),
         .dout_tx(dout_tx),
         .type_tx(type_tx),
         .req_tx(req_tx),
@@ -23,7 +23,7 @@ module print_tb(
     );
 
     initial begin
-        #10 req_tx = 1;
+        #20 req_tx = 1;
         #10 req_tx = 0;
     end
 
