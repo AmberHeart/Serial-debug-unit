@@ -4,8 +4,8 @@ module DCP_D(
     input rst,
     input we,
     output reg finish,
-    input [31:0] last_addr, // the address of the last data when look up last time 
-    output reg [31:0] end_addr, //the address of the last data when look up this time 
+    input [31:0] last_addr_D, // the address of the last data when look up last time 
+    output reg [31:0] end_addr_D, //the address of the last data when look up this time 
     input [7:0] d_rx,
     input [31:0] dout_dm, // data memory data output
     output [31:0] addr, // for CPU to read data
@@ -38,7 +38,8 @@ module DCP_D(
 
     reg req_rx = 0, req_tx = 0, type_rx, type_tx;
     wire ack_rx, ack_tx, flag_rx;
-    reg [31:0] din_rx, dout_tx;
+    wire [31:0] din_rx;
+    reg [31:0] dout_tx;
     reg [31:0] cur_addr; //keep the address of data to print
     reg count_INFO = 0; //used for print many bytes or words
     reg [2:0] count_DATA = 0;
@@ -86,7 +87,7 @@ module DCP_D(
                 else begin
                     req_rx <= 0;
                     if(!flag_rx) cur_addr <= din_rx;
-                    else cur_addr <= last_addr;
+                    else cur_addr <= last_addr_D;
                 end
             end
             PRINT_INF: begin
@@ -124,7 +125,7 @@ module DCP_D(
                 else req_tx <= 1;
             end
             FINISH: begin
-                end_addr<= cur_addr +1;
+                end_addr_D<= cur_addr +1;
                 if (count_FINISH == 0) begin
                     if (ack_tx) begin 
                         count_FINISH <= 1;

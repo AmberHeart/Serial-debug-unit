@@ -4,7 +4,10 @@ module SDU_test(
     //tx
     output txd,
     //rx
-    output rxd
+    output rxd,
+    // for test
+    output reg [7:0] scan_w,
+    output reg [7:0] print_w
 );
 
 //tx
@@ -45,8 +48,8 @@ DCP DCP_test(
     //cpu
     //.clk_cpu(clk_cpu),
     .pc_chk(1),
-    .pc(0),
-    .npc(0),
+    .PC(0),
+    .nPC(0),
     .IR(0),
     .A(0),
     .B(0),
@@ -78,4 +81,8 @@ uart_tx tx_test(
     .rdy_tx(rdy_tx),
     .txd(txd)
 );
+always@(*) begin
+    scan_w = d_rx;
+    print_w = d_tx;
+end
 endmodule

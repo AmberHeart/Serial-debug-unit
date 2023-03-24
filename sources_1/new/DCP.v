@@ -50,7 +50,8 @@ module DCP#(parameter CONTROL_STATUS = 32)(
     parameter CMD_L = 76; //L
 
     
-    reg busy, finish;
+    reg busy;
+    wire finish;
     wire [7:0] cmd; //command
     wire flag_cmd, ack_cmd; //acknowledge command
     reg we_P, we_R, we_D, we_I, we_T, we_B, we_G, we_H, we_L;
@@ -146,7 +147,7 @@ module DCP#(parameter CONTROL_STATUS = 32)(
         case(CS)
             0: begin
                 busy = 0;
-                finish = 0;
+                //finish = 0;
                 if((!flag_cmd)&&ack_cmd) NS = 1;  //recieve a command
                 else NS = 0;
             end
@@ -163,7 +164,7 @@ module DCP#(parameter CONTROL_STATUS = 32)(
             default: begin
                 busy = 0;
                 NS = 0;
-                finish = 0;
+                //finish = 0;
             end
         endcase
     //command process:choose a command module judge by cmd
