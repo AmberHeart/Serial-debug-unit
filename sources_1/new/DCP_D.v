@@ -2,26 +2,22 @@
 module DCP_D(
     input clk,
     input rst,
-    input we,
-    output reg finish,
-    input [31:0] last_addr_D, // the address of the last data when look up last time 
-    output reg [31:0] end_addr_D, //the address of the last data when look up this time 
-    input [7:0] d_rx,
+    input [7:0] sel_mode,
+    input [7:0] CMD_D,
+    output reg finish_D,
+    //input [31:0] last_addr_D, // the address of the last data when look up last time 
+    output reg [31:0] addr_D, //the address of the last data when look up this time 
+    input [31:0] din_rx,
     input [31:0] dout_dm, // data memory data output
-    output [31:0] addr, // for CPU to read data
-    input rdy_tx,
-    input vld_rx,
-    output vld_tx,
-    output rdy_rx,
-    output [7:0] d_tx
-    // //print
-    // input ack_scan,
-    // input ack_print,
-    // input flag,
-    // output reg type_rx,
-    // output reg type_tx,
-    // output reg req_scan,
-    // output reg req_print
+    //output [31:0] addr, // for CPU to read data
+    input ack_rx,
+    input flag_rx,
+    input ack_tx,
+    output reg req_rx_D,
+    output reg type_rx_D,
+    output reg req_tx_D,
+    output reg type_tx_D,
+    output reg [7:0] dout_D
 
 );
 // finite state machine
@@ -35,40 +31,17 @@ module DCP_D(
     PRINTD = 3'h6,
     FINISH = 3'h7;
     reg [2:0] NS = INIT , CS = INIT;
-
-    reg req_rx = 0, req_tx = 0, type_rx, type_tx;
-    wire ack_rx, ack_tx, flag_rx;
-    wire [31:0] din_rx;
-    reg [31:0] dout_tx;
+    reg last_addr_D;
+    //wire flag_rx;
+    //wire [31:0] din_rx;
+    //reg [31:0] dout_D;
     reg [31:0] cur_addr; //keep the address of data to print
     reg count_INFO = 0; //used for print many bytes or words
     reg [2:0] count_DATA = 0;
     reg count_FINISH = 0;
-
     assign addr = cur_addr;
-   
-    PRINT print_D(
-        .clk(clk), .rst(rst),
-        .dout_tx(dout_tx),
-        .type_tx(type_tx),
-        .req_tx(req_tx),
-        .ack_tx(ack_tx),
-        .d_tx(d_tx),
-        .vld_tx(vld_tx),
-        .rdy_tx(rdy_tx)
-    );
-
-    SCAN scan_D(
-        .clk(clk), .rst(rst),
-        .din_rx(din_rx),
-        .flag_rx(flag_rx),
-        .type_rx(type_rx),
-        .req_rx(req_rx),
-        .ack_rx(ack_rx),
-        .d_rx(d_rx),
-        .vld_rx(vld_rx),
-        .rdy_rx(rdy_rx)
-    );
+    wire we;
+    assign we = sel_mode == CMD_D;
 
     always @(posedge clk or posedge rst) begin
         if(rst) CS <= INIT;
@@ -76,16 +49,17 @@ module DCP_D(
         CS <= NS;
         case (CS)
             INIT: begin
-                    finish <= 0;
-                    req_rx <= 0;
+                    finish_D <= 0;
+                    req_rx_D <= 0;
                     count_INFO <= 0;
+                    type_rx_D <= 1;
             end
             SCAN: begin
                 if (~ack_rx) begin
-                    req_rx <= 1;
+                    req_rx_D <= 1;
                 end
                 else begin
-                    req_rx <= 0;
+                    req_rx_D <= 0;
                     if(!flag_rx) cur_addr <= din_rx;
                     else cur_addr <= last_addr_D;
                 end
@@ -94,23 +68,23 @@ module DCP_D(
                 if (count_INFO == 0) begin
                     if (ack_tx) begin 
                         count_INFO <= 1;
-                        req_tx <= 0;
+                        req_tx_D <= 0;
                     end
-                    else req_tx <= 1;
+                    else req_tx_D <= 1;
                 end
                 else begin
                     if (ack_tx) begin
                         count_INFO <= 0;
-                        req_tx <= 0;
+                        req_tx_D <= 0;
                     end
-                    else req_tx <= 1;
+                    else req_tx_D <= 1;
                 end
             end
             PRINTA: begin
                 if (ack_tx) begin
-                    req_tx <= 0;
+                    req_tx_D <= 0;
                 end
-                else req_tx <= 1;
+                else req_tx_D <= 1;
             end
             DATA: begin
                 count_DATA <= count_DATA + 1;
@@ -120,25 +94,25 @@ module DCP_D(
             end
             PRINTD: begin
                 if (ack_tx) begin
-                    req_tx <= 0;
+                    req_tx_D <= 0;
                 end
-                else req_tx <= 1;
+                else req_tx_D <= 1;
             end
             FINISH: begin
-                end_addr_D<= cur_addr +1;
+                addr_D<= cur_addr +1;
                 if (count_FINISH == 0) begin
                     if (ack_tx) begin 
                         count_FINISH <= 1;
-                        req_tx <= 0;
+                        req_tx_D <= 0;
                     end
-                    else req_tx <= 1;
+                    else req_tx_D <= 1;
                 end
                 else begin
                     if (ack_tx) begin
                         count_FINISH <= 0;
-                        req_tx <= 0;
+                        req_tx_D <= 0;
                     end
-                    else req_tx <= 1;
+                    else req_tx_D <= 1;
                 end
             end
         endcase
@@ -165,13 +139,13 @@ module DCP_D(
             // end
             PRINT_INF: begin //count_INFO =0 print 'D', count_INFO = 1 print '-'
                 if (count_INFO == 0) begin
-                    type_tx = 0;
-                    dout_tx = 32'h41;
+                    type_tx_D = 0;
+                    dout_D = 32'h41;
                     NS = PRINT_INF;
                 end
                 else begin
-                    type_tx = 0;
-                    dout_tx = 32'h2D;
+                    type_tx_D = 0;
+                    dout_D = 32'h2D;
                     if (ack_tx) begin
                     NS = PRINTA;
                     end
@@ -179,23 +153,23 @@ module DCP_D(
                 end
             end
             PRINTA: begin
-                dout_tx = cur_addr;
-                type_tx = 1;
+                dout_D = cur_addr;
+                type_tx_D = 1;
                 if (~ack_tx) NS = PRINTA;
                 else NS = PRINT_MAO;
             end
             PRINT_MAO: begin
-                type_tx = 0;
-                dout_tx = 32'h3A; //print ':'
+                type_tx_D = 0;
+                dout_D = 32'h3A; //print ':'
                 if (~ack_tx) NS = PRINT_MAO;
                 else NS = DATA;
             end
             DATA: begin
                 NS = PRINTD;
-                type_tx = 1;
+                type_tx_D = 1;
             end
             PRINTD: begin
-                dout_tx = dout_dm;
+                dout_D = dout_dm;
                 if (~ack_tx) NS = PRINTD;
                 else begin
                     if (|count_DATA) begin
@@ -206,16 +180,16 @@ module DCP_D(
             end
             FINISH: begin
                 if (count_FINISH == 0) begin
-                    type_tx = 0;
-                    dout_tx = 32'h0d;
+                    type_tx_D = 0;
+                    dout_D = 32'h0d;
                     NS = FINISH;
                 end
                 else begin
-                    type_tx = 0;
-                    dout_tx = 32'h0a;
+                    type_tx_D = 0;
+                    dout_D = 32'h0a;
                     if (ack_tx) begin
                         NS = INIT;
-                        finish = 1;
+                        finish_D = 1;
                     end
                     else NS = FINISH;
                 end
