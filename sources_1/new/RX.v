@@ -39,7 +39,7 @@ always @(posedge clk) begin
     end
 end
 always @(posedge clk) begin
-    if(rst||edg_up)begin
+    if(rst||edg_up||rdy_rx)begin
         d_rx<=0;
         CNT<=0;
     end
