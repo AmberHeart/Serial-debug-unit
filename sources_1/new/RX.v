@@ -4,7 +4,7 @@ module uart_rx(
     input clk,//9600*16  HZ
     input rst,
     input rxd,
-    input rdy_rx,//1 means ready to accept new data, 0 otherwise.
+    input rdy_rx,//1 means ready to accept new data, 0 otherwise.pulse signal
     output reg [7:0] d_rx,
     output reg vld_rx   //1 indicates that data has been received and is waiting for other modules to take it away
 );
