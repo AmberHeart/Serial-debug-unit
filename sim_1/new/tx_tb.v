@@ -25,16 +25,16 @@ module tx_tb(
         rst<=1;
         #6;
         rst<=0;
-        #8;
+        #1;
         vld_tx<=1;d_tx<=8'h65;
-        #51;
+        #16;
         vld_tx<=1;d_tx<=8'hab;
-        #60;
+        #16;
         vld_tx<=0;
     end
     always @(*) begin
         forever begin
-            #5;
+            #1;
             clk_tx=~clk_tx;
         end
     end

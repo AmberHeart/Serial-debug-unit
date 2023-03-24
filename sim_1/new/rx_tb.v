@@ -24,16 +24,16 @@ output reg vld_rx   //1提示数据已经接收,等待其他模块拿走
     initial begin
         rst=1;rxd=1;rdy_rx=1;
         #2;
-        rxd=0;rst=0;
-        #32;rxd=1;
-        #32;rxd=0;
-        #32;rxd=1;
-        #32;rxd=0;
-        #32;rxd=1;
-        #32;rxd=0;
-        #32;rxd=1;
-        #32;rxd=0;
-        #32;rxd=1;
+        rxd=0;rst=0;rdy_rx=0;
+        #16;rxd=1;
+        #16;rxd=0;
+        #16;rxd=1;
+        #16;rxd=0;
+        #16;rxd=1;
+        #16;rxd=0;
+        #16;rxd=1;
+        #16;rxd=0;
+        #16;rxd=1;
 
     end
     always @(*) begin
