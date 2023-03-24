@@ -22,7 +22,7 @@
 
 module DCP(
     input clk,
-    input rstn,
+    input rst,
     input d_rx,
     input vld_rx,
     output reg rdy_rx,
@@ -48,7 +48,7 @@ module DCP(
     wire flag_rx,ack_rx;
     wire [31:0] din_rx;
     SCAN(
-        .clk(clk), .rstn(rstn),
+        .clk(clk), .rst(rst),
         .d_rx(d_rx),
         .vld_rx(vld_rx),   .rdy_rx(rdy_rx),
         .type_rx(type_rx), .req_rx(req_rx),
@@ -59,7 +59,7 @@ module DCP(
     reg [31:0] dout_tx;
     wire ack_tx;
     PRINT(
-        .clk(clk), .rstn(rstn),
+        .clk(clk), .rst(rst),
         .d_tx(d_tx),
         .vld_tx(vld_tx),   .rdy_tx(rdy_tx),
         .type_tx(type_tx), .req_tx(req_tx),
@@ -94,9 +94,9 @@ module DCP(
     parameter CMD_LD = 8'h64; //
 
     // current state <= next state
-    always@(posedge clk or negedge rstn)
+    always@(posedge clk or posedge rst)
     begin
-        if(!rstn)
+        if(rst)
             curr_state <= INIT;
         else    
             curr_state <= next_state;
