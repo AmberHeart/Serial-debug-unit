@@ -1,236 +1,215 @@
 `timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 2023/03/20 16:15:34
+// Design Name: 
+// Module Name: DCP
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
 
-// Debug Command Processing
-module DCP#(parameter CONTROL_STATUS = 32)(
+
+module DCP(
     input clk,
-    input rst,
-    //uart_rx
-    input [7:0] d_rx,
+    input rstn,
+    input d_rx,
     input vld_rx,
     output reg rdy_rx,
-    //uart_tx
-    input rdy_tx,
-    output reg [7:0] d_tx,
+    output reg d_tx,
     output reg vld_tx,
-    //cpu_control
-    output clk_cpu, //cpu working clock
-    input pc_chk, // check current pc 
-    //cpu_status:datapath
-    input [31:0] PC, // current pc
-    input [31:0] nPC, //next pc
-    input [31:0] IR, // instruction
-    input [31:0] A, // register A
-    input [31:0] B, // register B
-    input [CONTROL_STATUS-1:0] ctl, // control unit
-    input [31:0] Y, // ALU result
-    input [31:0] MDR, // memory data
-    // input [31:0] MAR, // memory address
-    // input [31:0] SP, // stack pointer
-    //cpu_status:register file
-    output reg [31:0] addr, // register file address(also used as memory address)
-    input [31:0] dout_rf, // register file data output
-    //cpu_status:Memory
-    input [31:0] dout_dm, // data memory data output
-    input [31:0] dout_im, // instruction memory data output
-    //load_instruction
-    output clk_ld,  // load instruction clock
-    output [31:0] din, // data in(data or instruction, sharing address as addr)
-    output we_dm, // write data enable
-    output we_im  // load instruction enable
-);
-    //Some commands ACSII code:P、R、D、I、T、B、G、H、L
-    parameter CMD_P = 80; //P
-    parameter CMD_R = 82; //R
-    parameter CMD_D = 68; //D
-    parameter CMD_I = 73; //I
-    parameter CMD_T = 84; //T
-    parameter CMD_B = 66; //B
-    parameter CMD_G = 71; //G
-    parameter CMD_H = 72; //H
-    parameter CMD_L = 76; //L
-
-    
-    reg busy;
-    wire finish;
-    wire [7:0] cmd; //command
-    wire flag_cmd, ack_cmd; //acknowledge command
-    reg we_P, we_R, we_D, we_I, we_T, we_B, we_G, we_H, we_L;
-    
-    //switch signals (d_rx, vld_rx, rdy_tx directly attached to RX/TX)
-    wire [7:0] d_tx_D, d_tx_I, d_tx_T, d_tx_B, d_tx_G, d_tx_P, d_tx_R;
-    wire vld_tx_D, vld_tx_I, vld_tx_T, vld_tx_B, vld_tx_G, vld_tx_P, vld_tx_R;
-    wire rdy_rx_D, rdy_rx_I, rdy_rx_T, rdy_rx_B, rdy_rx_G, rdy_rx_P, rdy_rx_R, rdy_rx_DCP;
-    assign vld_tx_P = 0;
-    wire [31:0] addr_D, addr_I, addr_T, addr_B, addr_G, addr_P, addr_R;
-    reg [31:0] last_addr_D = 0;
-    wire [31:0] end_addr_D;
-
-
-//switch
-    always @(*) begin
-        if (~busy) begin
-            rdy_rx = rdy_rx_DCP;
-            d_tx = 0;
-            vld_tx = 0;
-        end
-        else if (we_D) begin
-            rdy_rx = rdy_rx_D;
-            d_tx = d_tx_D;
-            vld_tx = vld_tx_D;
-            addr = addr_D;
-        end
-        else if (we_I) begin
-            rdy_rx = rdy_rx_I;
-            d_tx = d_tx_I;
-            vld_tx = vld_tx_I;
-            addr = addr_I;
-        end
-        else if (we_T) begin
-            rdy_rx = rdy_rx_T;
-            d_tx = d_tx_T;
-            vld_tx = vld_tx_T;
-        end
-        else if (we_B) begin
-            rdy_rx = rdy_rx_B;
-            d_tx = d_tx_B;
-            vld_tx = vld_tx_B;
-        end
-        else if (we_G) begin
-            rdy_rx = rdy_rx_G;
-            d_tx = d_tx_G;
-            vld_tx = vld_tx_G;
-        end
-        else if (we_P) begin
-            rdy_rx = rdy_rx_P;
-            d_tx = d_tx_P;
-            vld_tx = vld_tx_P;
-        end
-        else if (we_R) begin
-            rdy_rx = rdy_rx_R;
-            d_tx = d_tx_R;
-            vld_tx = vld_tx_R;
-        end
-        else begin
-            rdy_rx = 0;
-            d_tx = 0;
-            vld_tx = 0;
-        end
-    end
-
-    //scan a command
-    SCAN SCAN_CMD(
-        .clk(clk),
-        .rst(rst),
-        .d_rx(d_rx),
-        .vld_rx(vld_rx),
-        .rdy_rx(rdy_rx_DCP),
-        .type_rx(1'b0),
-        .req_rx(!busy),
-        .flag_rx(flag_cmd),
-        .ack_rx(ack_cmd),
-        .din_rx({24'b0, cmd})
+    input rdy_tx,
+    output reg clk_cpu,
+    input pc_chk,
+    input [31:90] npc,
+    input [31:0] pc,
+    output reg [31:0] addr,
+    input [31:0] dout_rf,
+    input [31:0] dout_dm,
+    input [31:0] dout_im,
+    output reg [31:0] din,
+    output reg we_dm,
+    output reg we_im,
+    output reg clk_ld
     );
-    
-    //DCP states: 0 - scan 1 - busy 
-    reg CS, NS;
-    always @(posedge clk) begin
-        if(rst)begin
-            CS <= 0;
-            NS <= 0;
-        end
-        else begin 
-            CS <= NS;
-        end
-    end
 
+    //instantiate SCAN and PRINT
+    reg type_rx,req_rx;
+    wire flag_rx,ack_rx;
+    wire [31:0] din_rx;
+    SCAN(
+        .clk(clk), .rstn(rstn),
+        .d_rx(d_rx),
+        .vld_rx(vld_rx),   .rdy_rx(rdy_rx),
+        .type_rx(type_rx), .req_rx(req_rx),
+        .flag_rx(flag_rx), .ack_rx(ack_rx),
+        .din_rx(din_rx)
+        );
+    reg type_tx,req_tx;
+    reg [31:0] dout_tx;
+    wire ack_tx;
+    PRINT(
+        .clk(clk), .rstn(rstn),
+        .d_tx(d_tx),
+        .vld_tx(vld_tx),   .rdy_tx(rdy_tx),
+        .type_tx(type_tx), .req_tx(req_tx),
+        .ack_tx(ack_tx),
+        .dout_tx(dout_tx)
+        );
+
+    
+    // FSM
+    reg [7:0] sel_mode;
+    reg finish;
+    reg [7:0] curr_state;
+    reg [7:0] next_state;
+    parameter INIT = 8'h00; // initialize
+    parameter REQ_1ST = 8'h01; // read first character
+    parameter WAIT = 8'h02; // wait for child mode
+    // states for CMD
+    //suggest to use CNT to read arguments
+    parameter CMD_P = 8'h50; // 
+    parameter CMD_R = 8'h52; //
+    parameter CMD_D = 8'h44; //
+    //parameter D_addr = 8'h13; 
+    parameter CMD_I = 8'h49; //
+    //parameter I_addr = 8'h15; //
+    parameter CMD_T = 8'h54; //
+    parameter CMD_B = 8'h42; //
+    //parameter B_addr = 8'h18; //
+    parameter CMD_G = 8'h47; //
+    parameter CMD_H = 8'h48; //
+    parameter CMD_L = 8'h4C; //
+    parameter CMD_LI = 8'h69; //
+    parameter CMD_LD = 8'h64; //
+
+    // current state <= next state
+    always@(posedge clk or negedge rstn)
+    begin
+        if(!rstn)
+            curr_state <= INIT;
+        else    
+            curr_state <= next_state;
+    end 
+    // next state = f(current state,input)
     always@(*)
-        case(CS)
-            0: begin
-                busy = 0;
-                //finish = 0;
-                if((!flag_cmd)&&ack_cmd) NS = 1;  //recieve a command
-                else NS = 0;
-            end
-            1: begin
-                busy = 1;
-                //ack_cmd = 0;
-                //flag_cmd = 0;
-                if(finish) begin
-                    if(cmd == CMD_D) last_addr_D = end_addr_D; 
-                    NS = 0;  //finish a command
+    begin
+        case(curr_state)
+            INIT: next_state = REQ_1ST;
+            REQ_1ST: begin
+                if(ack_rx == 1)
+                begin
+                    case(din_rx)
+                        CMD_P: next_state = CMD_P;
+                        CMD_D: next_state = CMD_D;
+                        default: next_state = REQ_1ST;
+                    endcase
                 end
-                else NS = 1;
+                else
+                    next_state = REQ_1ST;             
             end
-            default: begin
-                busy = 0;
-                NS = 0;
-                //finish = 0;
+            CMD_D: next_state = WAIT;
+            WAIT: begin
+                if(finish) //finish is a signal from child module
+                    next_state = INIT;
+                else
+                    next_state = WAIT;
             end
+            default: next_state = curr_state;
         endcase
-    //command process:choose a command module judge by cmd
-    always@(*)
-        case(cmd)
-            CMD_P: we_P = 1'b1 && busy;
-            CMD_R: we_R = 1'b1 && busy;
-            CMD_D: we_D = 1'b1 && busy;
-            CMD_I: we_I = 1'b1 && busy;
-            CMD_T: we_T = 1'b1 && busy;
-            CMD_B: we_B = 1'b1 && busy;
-            CMD_G: we_G = 1'b1 && busy;
-            CMD_H: we_H = 1'b1 && busy;
-            CMD_L: we_L = 1'b1 && busy;
-            default: begin
-                we_P = 1'b0;
-                we_R = 1'b0;
-                we_D = 1'b0;
-                we_I = 1'b0;
-                we_T = 1'b0;
-                we_B = 1'b0;
-                we_G = 1'b0;
-                we_H = 1'b0;
-                we_L = 1'b0;
-            end
-        endcase
-    //command module
-    /*DCP_P DCP_P(
-        .clk(clk),
-        .rst(rst),
-        .we(we_P),
-        .finish(finish),
-        .PC(PC),
-        .nPC(nPC),
-        .IR(IR),
-        .A(A),
-        .B(B),
-        .ctl(ctl),
-        .Y(Y),
-        .MDR(MDR),
-        .rdy_tx(rdy_tx),
-        .vld_tx(vld_tx_P),
-        .d_tx(d_tx_P)
-    );*/
+    end
+    //output <= g(current state,input)
+    reg req_SCAN_1ST;
+    reg type_SCAN_1ST;
+    always@(posedge clk)
+    begin
+        if(curr_state == INIT)
+        begin
+            //do something to initialize
+            sel_mode = INIT;
+        end
+        else if(curr_state == REQ_1ST)
+        begin
+            req_SCAN_1ST <= 1;
+            type_SCAN_1ST <= 0;
+        end
+        else if(curr_state == CMD_D)
+            sel_mode <= CMD_D;
+        else if(curr_state == WAIT)
+            ;
+        else
+            ;
+    end
 
-    //DCP_D signals
 
-    
-
-    DCP_D DCP_d(// TO BE DONE
-        .clk(clk),
-        .rst(rst),
-        .we(we_D),
-        .finish(finish),
-        .addr(addr_D),
+    // instantiate child modules 
+    //wire finish_D;
+    wire req_rx_D,req_tx_D,type_rx_D,type_tx_D;
+    wire dout_D;
+    wire addr_D;
+    wire finish_D;
+    DCP_D(
+        .clk(clk), .rst(rst),
+        .sel_mode(sel_mode),
+        .CMD_D(CMD_D),
+        .finish(finish_D),
+        .addr_D(addr_D),
+        .din_rx(din_rx),
         .dout_dm(dout_dm),
-        .last_addr_D(last_addr_D),
-        .end_addr_D(end_addr_D),
-        .rdy_tx(rdy_tx),
-        .vld_tx(vld_tx_D),
-        .rdy_rx(rdy_rx_D),
-        .d_rx(d_rx),
-        .vld_rx(vld_rx),
-        .d_tx(d_tx_D)
+        .ack_rx(ack_rx), .flag_rx(flag_rx),
+        .ack_tx(ack_tx),
+        .req_rx_D(req_rx_D), .type_rx_D(type_rx_D),
+        .req_tx_D(req_tx_D), .type_tx_D(type_tx_D),
+        .dout_D(dout_D)
     );
-   
 
-    
+    // sel data from child modules
+    always@(*) // sel print data
+    begin
+        case(sel_mode)
+            INIT: begin
+                req_tx = req_SCAN_1ST;
+                type_tx = type_SCAN_1ST;
+                req_tx = 0;
+                type_tx = 0;
+                dout_tx = 32'h0000_0000;
+                addr = 32'h0000_0000;
+                finish = 0;
+            end
+            CMD_D: begin
+                req_rx = req_rx_D;
+                type_rx = type_rx_D;
+                req_tx = req_tx_D;
+                type_tx = type_tx_D;
+                dout_tx = dout_D;
+                addr = addr_D;
+                finish = finish_D;
+            end
+            /*CMD_R: begin
+                ack_child = ack_R;
+                type_child = type_R;
+                dout_child = dout_R;
+                addr = addr_R;
+            end*/
+            default: begin
+                req_rx = 0;
+                type_rx = 0;
+                req_tx = 0;
+                type_tx = 0;
+                dout_tx = 32'h0000_0000;
+                addr = 32'h0000_0000;
+                finish = 0;
+            end
+        endcase
+    end
 endmodule
