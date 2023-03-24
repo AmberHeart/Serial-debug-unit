@@ -9,10 +9,10 @@ module DCP_D(
     input [7:0] d_rx,
     input [31:0] dout_dm, // data memory data output
     output [31:0] addr, // for CPU to read data
-    input rdy_tx,
-    input vld_rx,
-    output vld_tx,
-    output rdy_rx,
+    //input rdy_tx,
+    //input vld_rx,
+    //output vld_tx,
+    //output rdy_rx,
     output [7:0] d_tx
     // //print
     // input ack_scan,
@@ -47,7 +47,7 @@ module DCP_D(
 
     assign addr = cur_addr;
    
-    PRINT print_D(
+    /*PRINT print_D(
         .clk(clk), .rst(rst),
         .dout_tx(dout_tx),
         .type_tx(type_tx),
@@ -68,7 +68,7 @@ module DCP_D(
         .d_rx(d_rx),
         .vld_rx(vld_rx),
         .rdy_rx(rdy_rx)
-    );
+    );*/
 
     always @(posedge clk or posedge rst) begin
         if(rst) CS <= INIT;

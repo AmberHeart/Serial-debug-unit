@@ -43,14 +43,15 @@ module DCP_Dtb(
         .last_addr_D(last_addr_D),
         .end_addr_D(end_addr_D),
         .d_rx(d_rx),
-        .dout_dm(dout_dm),
-        .addr(addr),
+        .dout_dm(dout_dm),//cpu data memory data output
+        .addr(addr),// input for cpu to read data
         .rdy_tx(rdy_tx),
         .vld_rx(vld_rx),
         .vld_tx(vld_tx),
         .rdy_rx(rdy_rx),
-        .d_tx(d_tx)
+        .d_tx(d_tx)//output for cpu to print
     );
+    reg txd;
     uart_tx utx(
         .clk_tx(clk_tx),
         .rst(rst),
@@ -59,6 +60,7 @@ module DCP_Dtb(
         .rdy_tx(rdy_tx),
         .txd(txd)
     );
+    reg rxd;
     uart_rx rx(
         .clk(clk),
         .rst(rst),
@@ -73,7 +75,7 @@ module DCP_Dtb(
         rst=0;
         #1 rst =1;
         #1 rst =0;
-
+        
         #2;
         
 
