@@ -157,8 +157,9 @@ module DCP(
             type_rx_1ST <= 0;
             if(ack_rx == 1)
             begin
-                case(din_rx[7:0])  //read first character
+                case(din_rx[7:0])  //read first character                 
                     CMD_D: sel_mode <= CMD_D;
+                    CMD_R: sel_mode <= CMD_R;
                     default: sel_mode <= INIT;
                 endcase
             end
@@ -190,6 +191,21 @@ module DCP(
         .req_tx_D(req_tx_D), .type_tx_D(type_tx_D),
         .dout_D(dout_D)
     );
+    wire finish_R;
+    wire [31:0] dout_R;
+    wire [31:0] addr_R;
+    wire req_tx_R,type_tx_R;
+    DCP_R(
+        .clk(clk), .rstn(rstn),
+        .sel_mode(sel_mode),
+        .CMD_R(CMD_R),
+        .finish_R(finish_R),
+        .req_tx_R(req_tx_R), .type_tx_R(type_tx_R),
+        .ack_tx(ack_tx),
+        .addr_R(addr_R),
+        .dout_rf(dout_rf),
+        .dout_R(dout_R)
+        );
 
     // sel data from child modules
     always@(*) // sel print data
@@ -214,12 +230,15 @@ module DCP(
                 addr = addr_D;
                 finish = finish_D;
             end
-            /*CMD_R: begin
-                ack_child = ack_R;
-                type_child = type_R;
-                dout_child = dout_R;
+            CMD_R: begin
+                req_rx = 0;
+                type_rx = 0;
+                req_tx = req_tx_R;
+                type_tx = type_tx_R;
+                dout_tx = dout_R;
                 addr = addr_R;
-            end*/
+                finish = finish_R;
+            end
             default: begin
                 req_rx = 0;
                 type_rx = 0;
