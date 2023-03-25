@@ -9,7 +9,12 @@ module SDU_test(
     output reg [7:0] scan_w,
     output reg [7:0] print_w
 );
-
+wire dclk;
+DIV_CLK div_clk(
+    .clk(clk),
+    .rstn(rst),
+    .div_clk(dclk)
+);
 //tx
 wire [7:0] d_tx;
 wire vld_tx;
@@ -29,13 +34,13 @@ dist_mem_gen_0 your_instance_name (
   .a(addr[9:0]),        // input wire [9 : 0] a
   .d(0),        // input wire [31 : 0] d
   .dpra(0),  // input wire [9 : 0] dpra
-  .clk(clk),    // input wire clk
+  .clk(dclk),    // input wire clk
   .we(0),      // input wire we
   .spo(dout_dm)    // output wire [31 : 0] spo
   //.dpo(dpo)    // output wire [31 : 0] dpo
 );
 DCP DCP_test(
-    .clk(clk),
+    .clk(dclk),
     .rst(rst),
     //rx
     .d_rx(d_rx),
@@ -65,7 +70,7 @@ DCP DCP_test(
     //.we_im(we_im)
 );
 uart_rx rx_test(
-    .clk(clk),
+    .clk(dclk),
     .rst(rst),
     .rxd(rxd),
     .d_rx(d_rx),
@@ -73,7 +78,7 @@ uart_rx rx_test(
     .rdy_rx(rdy_rx)
 );
 uart_tx tx_test(
-    .clk(clk),
+    .clk(dclk),
     .rst(rst),
     .d_tx(d_tx),
     .vld_tx(vld_tx),
