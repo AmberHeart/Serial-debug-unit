@@ -203,11 +203,7 @@ module DCP(
                 addr = 32'h0000_0000;
                 finish = 1;
             end
-            REQ_1ST: begin
-                req_rx = req_rx_1ST;
-                type_rx = type_rx_1ST;
-
-            end
+            
             CMD_D: begin
                 req_rx = req_rx_D;
                 type_rx = type_rx_D;

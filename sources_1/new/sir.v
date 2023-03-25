@@ -106,7 +106,7 @@ module SIR(
         begin
             cntc <= cntc - 1;
             cntb <= cntb - 1;
-            SIR <= {SIR[7:0],rxd};
+            SIR <= {rxd, SIR[8:1]};
         end
         else if(curr_state == SAVE)
         begin
