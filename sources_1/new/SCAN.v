@@ -156,7 +156,7 @@ module SCAN(
                     ; // not valid, then wait for data
             end
             else 
-                flag_rx <= 0; // cnt > 3, then wait for sending data      
+                flag_rx <= 0; // cnt > 7, then wait for sending data      
         end
         else if(curr_state == ENTER)
         begin
