@@ -41,7 +41,7 @@ module DCP_D(
     reg count_FINISH = 0;
     assign addr = cur_addr;
     wire we;
-    assign we = sel_mode == CMD_D;
+    assign we = (sel_mode == CMD_D);
 
     always @(posedge clk or posedge rst) begin
         if(rst) CS <= INIT;
