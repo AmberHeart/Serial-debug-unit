@@ -13,7 +13,7 @@ reg [3:0] CNT;
 reg [15:0] fr_div;
 reg [8:0] SOR;
 // reg [3:0] CNT;
-parameter TICKS_PER_BIT = 10417; 
+parameter TICKS_PER_BIT = 15; 
 RDY rdy(
     .vld_tx(vld_tx),
     .rst(rst),
