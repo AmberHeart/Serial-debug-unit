@@ -46,10 +46,10 @@ module DCP(
     output reg we_dm,
     output reg we_im,
     output reg clk_ld
-    //test part
-    ,output [7:0] cs
-    ,output rqs_rx
-    ,output akn_rx
+    ////test part
+    //,output [7:0] cs
+    //,output rqs_rx
+    //,output akn_rx
     );
 
     //instantiate SCAN and PRINT
@@ -231,8 +231,8 @@ module DCP(
         endcase
     end
 
-    //test part
-    assign cs = curr_state;
-    assign rqs_rx = req_rx;
-    assign akn_rx = ack_rx;
+    ////test part
+    //assign cs = curr_state;
+    //assign rqs_rx = req_rx;
+    //assign akn_rx = ack_rx;
 endmodule
