@@ -66,6 +66,7 @@ module DCP_Dtb(
         #2 rst =0;
         #2 ack_rx = 0;
         din_rx = 32'h00000123;
+        dout_dm= 32'h00000716;
         #10
         flag_rx = 0;
         #2 ack_rx=1;
