@@ -67,7 +67,7 @@ module SCAN(
     begin
         if(curr_state == IDLE)
         begin
-            if(req_rx == 0)
+            if(req_rx == 1)
             begin
                 if(type_rx == 0)
                     next_state = BYTE;
@@ -93,7 +93,7 @@ module SCAN(
         end
         else if(curr_state == ADDR)
         begin
-            if(cnt == 4)
+            if(cnt == 8)
                 next_state = SEND;
             else 
             begin
@@ -140,14 +140,14 @@ module SCAN(
         else if(curr_state == ADDR)
         begin
             rdy_rx <= 1; // ready to receive data
-            if(cnt <= 3)
+            if(cnt <= 7)
             begin
                 if(vld_rx == 1)
                 begin
                     if(Hex)
                     begin
                         cnt <= cnt + 1;
-                        din_rx <= {din_rx[23:0],C2H[3:0]};
+                        din_rx <= {din_rx[27:0],C2H[3:0]};
                     end
                     else 
                         ; // not Hex, then wait for data    

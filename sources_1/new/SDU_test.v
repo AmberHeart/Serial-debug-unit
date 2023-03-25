@@ -8,8 +8,8 @@ module SDU_test(
     // for test
     output reg [7:0] scan_w,
     output [7:0] print_w,
-    output req_rx,
-    output ack_rx,
+    output rqs_rx,
+    output akn_rx,
     output reg test_dclk
 );
 wire dclk;
@@ -92,7 +92,7 @@ DCP DCP_test(
     .we_im(we_im),
     //test part
     .cs(cs),
-    .rqs_rx(req_rx),
+    .rqs_rx(rqs_rx),
     .akn_rx(akn_rx)
 );
 RX rx_test(

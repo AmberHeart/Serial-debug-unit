@@ -124,7 +124,7 @@ module RX(
             if(SIR_saved == 1)
             begin
                 vld_rx <= 1;
-                DIR <= SIR[8:1];
+                DIR <= SIR[7:0];
             end
             else //no data 
                 DIR <= 8'h00;
