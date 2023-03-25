@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module SDU_test(
+module SDU_test_wyl(
     input clk,
     input rstn,
     input rxd,
@@ -42,7 +42,7 @@ module SDU_test(
     wire clk_ld;
     wire [7:0] r;
     wire [7:0] t;
-    SDU SDU(
+    SDU_wyl SDU_wyl(
         .clk(clk),
         .rstn(rstn),
         .rxd(rxd),

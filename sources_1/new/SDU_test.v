@@ -1,4 +1,4 @@
-module SDU_test(
+module SDU_test_sure(
     input clk,
     input rstn,
     //tx

@@ -20,14 +20,14 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module SDU(
+module SDU_wyl(
     input clk, 
     input rstn,
     input rxd,
     output txd,
     output clk_cpu,
     input pc_chk,
-    input [31:90] npc,
+    input [31:0] npc,
     input [31:0] pc,
     //input [31:0] IR,    
     //input [31:0] A,
