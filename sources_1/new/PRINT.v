@@ -1,5 +1,5 @@
 module PRINT(
-    input clk, rst,
+    input clk, rstn,
     input [31:0] dout_tx,   //data to be printed (from DCP)
     input type_tx,          //0 stand for Byte, 1 stand for Word (from DCP)
     input req_tx,           //request to send (from DCP)
@@ -23,7 +23,7 @@ module PRINT(
     wire [63:0] dout;
 
     Posedge_Selector ps(
-        .clk(clk), .rst(rst), .in(req_tx),
+        .clk(clk), .rstn(rstn), .in(req_tx),
         .out(req_tx_ps)
     );
 
@@ -36,8 +36,8 @@ module PRINT(
         .doutb(dout[31:0])  // output wire [31 : 0] doutb
     );
 
-    always @(posedge clk or posedge rst) begin
-        if (rst) Print_State <= PRINT_INIT;
+    always @(posedge clk or negedge rstn) begin
+        if (~rstn) Print_State <= PRINT_INIT;
         else begin
             case (Print_State)
                 PRINT_INIT: begin

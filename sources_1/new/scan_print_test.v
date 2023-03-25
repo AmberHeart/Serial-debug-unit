@@ -1,6 +1,6 @@
 module scan_print_test(
     input clk,
-    input rst,
+    input rstn,
     //tx
     output txd,
     //rx
@@ -19,12 +19,12 @@ reg vld_rx;
 reg rdy_tx;
 DIV_CLK div_clk(
     .clk(clk),
-    .rstn(rst),
+    .rstn(rstn),
     .div_clk(dclk)
 );
 RX rx_test(
     .clk(dclk),
-    .rstn(!rst),
+    .rstn(rstn),
     .rxd(rxd),
     .d_rx(d_rx),
     .vld_rx(vld_rx),
@@ -32,7 +32,7 @@ RX rx_test(
 );
 uart_tx tx_test(
     .clk(dclk),
-    .rst(rst),
+    .rstn(rstn),
     .d_tx(d_tx),
     .vld_tx(vld_tx),
     .rdy_tx(rdy_tx),

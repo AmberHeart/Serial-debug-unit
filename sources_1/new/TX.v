@@ -2,7 +2,7 @@
 
 module uart_tx(
     input clk,
-    input rst,
+    input rstn,
     input [7:0] d_tx,
     input vld_tx,//vld需要其他模块输入，可以理解为发送使能
     output rdy_tx,//rdy只是遵循协议，其实PC不管这个
@@ -16,7 +16,7 @@ reg [8:0] SOR;
 parameter TICKS_PER_BIT = 15; 
 RDY rdy(
     .vld_tx(vld_tx),
-    .rst(rst),
+    .rstn(rstn),
     .clk(clk),
     .CNT(CNT),
     .rdy_tx(rdy_tx),
@@ -24,8 +24,8 @@ RDY rdy(
 );
 
 // reg [15:0] fr_div;
-always @(posedge clk or posedge rst) begin
-    if(rst)begin
+always @(posedge clk or negedge rstn) begin
+    if(~rstn)begin
         fr_div<=0;
     end else if(fr_div==TICKS_PER_BIT) begin
         fr_div<=0;
@@ -33,8 +33,8 @@ always @(posedge clk or posedge rst) begin
         fr_div<=fr_div+1;
     end
 end
-always @(posedge clk or posedge rst) begin
-    if(rst)begin
+always @(posedge clk or negedge rstn) begin
+    if(~rstn)begin
         CNT<=0;
     end else if(fr_div==0)begin
         if(CNT)begin

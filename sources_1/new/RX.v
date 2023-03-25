@@ -2,7 +2,7 @@
 
 // module uart_rx(
 //     input clk,//9600*16  HZ
-//     input rst,
+//     input rstn,
 //     input rxd,
 //     input rdy_rx,//1 means ready to accept new data, 0 otherwise.pulse signal
 //     output reg [7:0] d_rx,
@@ -18,13 +18,13 @@
 // CNTc cntc(
 //     /*
 //     input clk,
-//     input rst,
+//     input rstn,
 //     input rxd,
 //     input vld_rx,
 //     output reg process
 //     */
 //     .clk(clk),
-//     .rst(rst),
+//     .rstn(rstn),
 //     .rxd(rxd),
 //     .vld_rx(vld_rx),//vld_rx=1--->process=0
 //     .process(process)
@@ -39,7 +39,7 @@
 //     end
 // end
 // always @(posedge clk) begin
-//     if(rst||edg_up||rdy_rx)begin
+//     if(rstn||edg_up||rdy_rx)begin
 //         d_rx<=0;
 //         CNT<=0;
 //     end
@@ -53,7 +53,7 @@
 //     end
 // end
 // always @(posedge clk) begin
-//     if(rst||edg_up||rdy_rx)begin
+//     if(rstn||edg_up||rdy_rx)begin
 //         CNTb<=0;
 //         vld_rx<=0;
 //     end else if(process)begin

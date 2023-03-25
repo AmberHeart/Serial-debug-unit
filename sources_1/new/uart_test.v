@@ -4,7 +4,7 @@
 
 module uart_echo(
     input clk,
-    input reset,
+    input rstn,
     input rxd,
     // input [7:0] btn,
     // output txd,
@@ -24,14 +24,14 @@ uart_rx rx(
     output reg vld_rx,   //1提示数据已经接收,等待其他模块拿走,只有一个脉冲
     */
     .clk(clk),
-    .rst(reset),
+    .rstn(rstn),
     .rxd(rxd),
     .rdy_rx(1),
     .d_rx(d_rx),
     .vld_rx(vld_rx)
 );
 always @(posedge clk) begin
-    if(reset)begin
+    if(~rstn)begin
         word<=0;
     end
     if(vld_rx)begin
@@ -47,14 +47,14 @@ end
 // uart_tx tx(
 //     /*
 //     input clk_tx,//clk_tx是9600的波特率，不要直接传100MHZ
-//     input rst,
+//     input rstn,
 //     input [7:0] d_tx,
 //     input vld_tx,//vld需要其他模块输入，可以理解为发送使能(脉冲信号)
 //     output rdy_tx,//rdy只是遵循协议，其实PC不管这个
 //     output reg txd
 //     */
 //     .clk(clk),
-//     .rst(reset),
+//     .rstn(rstn),
 //     .d_tx(word),//echo computer's message
 //     .vld_tx(vld_rx),
 //     .rdy_tx(rdy_tx),

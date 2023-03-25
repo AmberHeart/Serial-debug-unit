@@ -49,7 +49,7 @@ module SDU(
     //output [7:0] t
 );
     wire div_16_9600_clk;
-    DIV_RX_CLK div_rx_clk(
+    DIV_CLK div_rx_clk(
         .clk(clk),
         .rstn(rstn),
         .div_clk(div_16_9600_clk)
@@ -63,7 +63,7 @@ module SDU(
     wire vld_rx,rdy_rx;
     wire [7:0] d_rx;
     assign r = d_rx;
-    RX(
+    RX wls_rx(
         .clk(div_16_9600_clk), .rstn(rstn),
         .rxd(rxd),
         .vld_rx(vld_rx), .rdy_rx(rdy_rx),
@@ -72,7 +72,7 @@ module SDU(
     wire vld_tx,rdy_tx;
     wire [7:0] d_tx;
     assign t = d_tx;
-    TX(
+    uart_tx yls_tx(
         .clk(div_16_9600_clk), .rstn(rstn),
         .txd(txd),
         .vld_tx(vld_tx), .rdy_tx(rdy_tx),

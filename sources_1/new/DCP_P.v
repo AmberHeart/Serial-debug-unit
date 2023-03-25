@@ -3,7 +3,7 @@
 
 module DCP_P#(parameter CONTROL_STATUS = 32)(
     input clk,
-    input rst,
+    input rstn,
     input we,
     output finish,
     input [31:0] PC, // current pc
@@ -63,7 +63,7 @@ module DCP_P#(parameter CONTROL_STATUS = 32)(
     reg req;
     //state machine
     always @(posedge clk)begin
-        if(rst)begin
+        if(!rstn)begin
             CS <= 0;
             NS <= 0;
         end
@@ -107,7 +107,7 @@ module DCP_P#(parameter CONTROL_STATUS = 32)(
 
     PRINT PRINT_P(
         .clk(clk),
-        .rst(rst),
+        .rstn(rstn),
         .dout_tx(data),
         .type_tx(type_tx),
         .req_tx(req_tx),
