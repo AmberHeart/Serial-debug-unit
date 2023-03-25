@@ -7,9 +7,21 @@ module SDU_test(
     output rxd,
     // for test
     output reg [7:0] scan_w,
-    output reg [7:0] print_w
+    output [7:0] print_w,
+    output req_rx,
+    output ack_rx,
+    output reg test_dclk
 );
 wire dclk;
+reg [10:0] test_dclk_count=0;
+always@(posedge dclk) begin
+ if(dclk) test_dclk_count<=test_dclk_count+1;
+    if(test_dclk_count>1024) begin
+        test_dclk <=1;
+    end
+    else test_dclk<=0;
+    
+end
 DIV_CLK div_clk(
     .clk(clk),
     .rstn(rst),
@@ -27,10 +39,10 @@ wire rdy_rx;
 wire [31:0] addr;
 wire [31:0] dout_dm;
 wire [31:0] dpo;
-//1 个通道共享读写（等同于单口），1 个通道只读，2 个输出，
-//spo 数据对应 a 地址，dpo 数据对应 dpra 地址；
-//a[5:0]，读写共用的地址，当 we = 1 时表示写地址，将 d[15:0] 写入 RAM，当 we = 0 时，将 a[5:0] 地址的数据从 spo[15:0] 上输出；
-//dpra[5:0] 只用于读的地址，读出 dpra[5:0] 上的数据，从 dpo[15:0] 输出。
+//1 个�?�道共享读写（等同于单口），1 个�?�道只读�?2 个输出，
+//spo 数据对应 a 地址，dpo 数据对应 dpra 地址�?
+//a[5:0]，读写共用的地址，当 we = 1 时表示写地址，将 d[15:0] 写入 RAM，当 we = 0 时，�? a[5:0] 地址的数据从 spo[15:0] 上输出；
+//dpra[5:0] 只用于读的地�?，读�? dpra[5:0] 上的数据，从 dpo[15:0] 输出�?
 dist_mem_gen_0 your_instance_name (
   .a(addr[9:0]),        // input wire [9 : 0] a
   .d(0),        // input wire [31 : 0] d
@@ -45,6 +57,9 @@ wire clk_ld;
 wire [31:0] din;
 wire we_dm;
 wire we_im;
+
+//test part
+wire [7:0] cs;
 
 DCP DCP_test(
     .clk(dclk),
@@ -74,11 +89,15 @@ DCP DCP_test(
     .clk_ld(clk_ld),
     .din(din),
     .we_dm(we_dm),
-    .we_im(we_im)
+    .we_im(we_im),
+    //test part
+    .cs(cs),
+    .rqs_rx(req_rx),
+    .akn_rx(akn_rx)
 );
-uart_rx rx_test(
+RX rx_test(
     .clk(dclk),
-    .rst(rst),
+    .rstn(!rst),
     .rxd(rxd),
     .d_rx(d_rx),
     .vld_rx(vld_rx),
@@ -92,8 +111,9 @@ uart_tx tx_test(
     .rdy_tx(rdy_tx),
     .txd(txd)
 );
-always@(*) begin
-    scan_w = d_rx;
-    print_w = d_tx;
+always@(posedge clk) begin
+    scan_w <= d_rx == 0? scan_w : d_rx;
+    //print_w <= d_tx == 0? print_w : d_tx;
 end
+assign print_w = cs;
 endmodule
