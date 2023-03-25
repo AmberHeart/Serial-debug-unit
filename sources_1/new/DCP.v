@@ -177,7 +177,7 @@ module DCP(
     wire [31:0] dout_D;
     wire [31:0] addr_D;
     wire finish_D;
-    DCP_D(
+    /*DCP_D(
         .clk(clk), .rstn(rstn),
         .sel_mode(sel_mode),
         .CMD_D(CMD_D),
@@ -190,7 +190,7 @@ module DCP(
         .req_rx_D(req_rx_D), .type_rx_D(type_rx_D),
         .req_tx_D(req_tx_D), .type_tx_D(type_tx_D),
         .dout_D(dout_D)
-    );
+    );*/
     wire finish_R;
     wire [31:0] dout_R;
     wire [31:0] addr_R;
@@ -252,7 +252,7 @@ module DCP(
     end
 assign sel = sel_mode;
     ////test part
-    //assign cs = curr_state;
+assign cs = curr_state;
     //assign rqs_rx = req_rx;
     //assign akn_rx = ack_rx;
 endmodule

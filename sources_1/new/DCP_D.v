@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 module DCP_D(
     input clk,
-    input rst,
+    input rstn,
     input [7:0] sel_mode,
     input [7:0] CMD_D,
     output reg finish_D,
@@ -43,8 +43,8 @@ module DCP_D(
     wire we;
     assign we = (sel_mode == CMD_D);
 
-    always @(posedge clk or posedge rst) begin
-        if(rst)begin
+    always @(posedge clk or negedge rstn) begin
+        if(~rstn)begin
             CS <= INIT;
             finish_D <= 0;
             req_rx_D <= 0;
@@ -123,6 +123,7 @@ module DCP_D(
                     if (ack_tx) begin
                         count_FINISH <= 0;
                         req_tx_D <= 0;
+                        finish_D<=1;
                     end
                     else req_tx_D <= 1;
                 end
@@ -201,7 +202,7 @@ module DCP_D(
                     dout_D = 32'h0a;
                     if (ack_tx) begin
                         NS = INIT;
-                        finish_D = 1;
+                        
                     end
                     else NS = FINISH;
                 end
