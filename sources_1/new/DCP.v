@@ -38,7 +38,7 @@ module DCP(
     input [31:0] B,
     input [31:0] Y,
     input [31:0] MDR,
-    output reg [31:0] addr,
+    output reg [31:0] addr, //for CPU
     input [31:0] dout_rf,
     input [31:0] dout_dm,
     input [31:0] dout_im,
@@ -46,6 +46,10 @@ module DCP(
     output reg we_dm,
     output reg we_im,
     output reg clk_ld
+    //test part
+    ,output [7:0] cs
+    ,output rqs_rx
+    ,output akn_rx
     );
 
     //instantiate SCAN and PRINT
@@ -76,7 +80,7 @@ module DCP(
     // FSM
     reg [7:0] sel_mode;
     reg finish;
-    reg [7:0] curr_state;
+    reg [7:0] curr_state = 0;
     reg [7:0] next_state;
     parameter INIT = 8'h00; // initialize
     parameter REQ_1ST = 8'h01; // read first character
@@ -199,6 +203,11 @@ module DCP(
                 addr = 32'h0000_0000;
                 finish = 1;
             end
+            REQ_1ST: begin
+                req_rx = req_rx_1ST;
+                type_rx = type_rx_1ST;
+
+            end
             CMD_D: begin
                 req_rx = req_rx_D;
                 type_rx = type_rx_D;
@@ -225,4 +234,9 @@ module DCP(
             end
         endcase
     end
+
+    //test part
+    assign cs = curr_state;
+    assign rqs_rx = req_rx;
+    assign akn_rx = ack_rx;
 endmodule
