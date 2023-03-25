@@ -25,7 +25,8 @@ wire vld_rx;
 wire rdy_rx;
 //cpu
 wire [31:0] addr;
-wire dout_dm;
+wire [31:0] dout_dm;
+wire [31:0] dpo;
 //1 个通道共享读写（等同于单口），1 个通道只读，2 个输出，
 //spo 数据对应 a 地址，dpo 数据对应 dpra 地址；
 //a[5:0]，读写共用的地址，当 we = 1 时表示写地址，将 d[15:0] 写入 RAM，当 we = 0 时，将 a[5:0] 地址的数据从 spo[15:0] 上输出；
@@ -36,9 +37,15 @@ dist_mem_gen_0 your_instance_name (
   .dpra(0),  // input wire [9 : 0] dpra
   .clk(dclk),    // input wire clk
   .we(0),      // input wire we
-  .spo(dout_dm)    // output wire [31 : 0] spo
-  //.dpo(dpo)    // output wire [31 : 0] dpo
+  .spo(dout_dm),    // output wire [31 : 0] spo
+  .dpo(dpo)    // output wire [31 : 0] dpo
 );
+wire clk_cpu;
+wire clk_ld;
+wire [31:0] din;
+wire we_dm;
+wire we_im;
+
 DCP DCP_test(
     .clk(dclk),
     .rst(rst),
@@ -51,7 +58,7 @@ DCP DCP_test(
     .vld_tx(vld_tx),
     .rdy_tx(rdy_tx),
     //cpu
-    //.clk_cpu(clk_cpu),
+    .clk_cpu(clk_cpu),
     .pc_chk(1),
     .pc(0),
     .npc(0),
@@ -63,11 +70,11 @@ DCP DCP_test(
     .addr(addr),
     .dout_rf(0),
     .dout_dm(dout_dm),
-    .dout_im(0)
-    //.clk_ld(clk_ld),
-    //.din(din),
-    //.we_dm(we_dm),
-    //.we_im(we_im)
+    .dout_im(0),
+    .clk_ld(clk_ld),
+    .din(din),
+    .we_dm(we_dm),
+    .we_im(we_im)
 );
 uart_rx rx_test(
     .clk(dclk),

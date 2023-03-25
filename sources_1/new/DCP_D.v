@@ -44,7 +44,13 @@ module DCP_D(
     assign we = (sel_mode == CMD_D);
 
     always @(posedge clk or posedge rst) begin
-        if(rst) CS <= INIT;
+        if(rst)begin
+            CS <= INIT;
+            finish_D <= 0;
+            req_rx_D <= 0;
+            count_INFO <= 0;
+            type_rx_D <= 1;
+        end
         else begin
         CS <= NS;
         case (CS)

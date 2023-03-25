@@ -23,10 +23,10 @@
 module DCP(
     input clk,
     input rst,
-    input d_rx,
+    input [7:0] d_rx,
     input vld_rx,
     output  rdy_rx,
-    output  d_tx,
+    output [7:0] d_tx,
     output  vld_tx,
     input rdy_tx,
     output reg clk_cpu,
@@ -168,8 +168,8 @@ module DCP(
     // instantiate child modules 
     //wire finish_D;
     wire req_rx_D,req_tx_D,type_rx_D,type_tx_D;
-    wire dout_D;
-    wire addr_D;
+    wire [31:0] dout_D;
+    wire [31:0] addr_D;
     wire finish_D;
     DCP_D(
         .clk(clk), .rst(rst),

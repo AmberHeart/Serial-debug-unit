@@ -4,7 +4,10 @@ module Posedge_Selector(
     );
     reg last;
     always @(posedge clk, posedge rst) begin
-        if (rst) out <= 0;
+        if (rst) begin 
+            out <= 0;
+            last<=0;
+        end
         else begin
             out <= in & !last;
             last <= in;
