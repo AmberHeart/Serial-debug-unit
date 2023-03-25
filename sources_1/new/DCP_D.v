@@ -17,7 +17,7 @@ module DCP_D(
     output reg type_rx_D,
     output reg req_tx_D,
     output reg type_tx_D,
-    output reg [7:0] dout_D
+    output reg [31:0] dout_D
 
 );
 // finite state machine
@@ -81,6 +81,12 @@ module DCP_D(
                 end
             end
             PRINTA: begin
+                if (ack_tx) begin
+                    req_tx_D <= 0;
+                end
+                else req_tx_D <= 1;
+            end
+            PRINT_MAO: begin
                 if (ack_tx) begin
                     req_tx_D <= 0;
                 end
