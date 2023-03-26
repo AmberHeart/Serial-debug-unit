@@ -68,7 +68,7 @@ module DCP(
     reg type_tx,req_tx;
     reg [31:0] dout_tx;
     wire ack_tx;
-    PRINT(
+    Print(
         .clk(clk), .rstn(rstn),
         .d_tx(d_tx),
         .vld_tx(vld_tx),   .rdy_tx(rdy_tx),

@@ -72,7 +72,7 @@ module SDU_wyl(
     wire vld_tx,rdy_tx;
     wire [7:0] d_tx;
     assign t = d_tx;
-    uart_tx yls_tx(
+    TX wls_tx(
         .clk(div_16_9600_clk), .rstn(rstn),
         .txd(txd),
         .vld_tx(vld_tx), .rdy_tx(rdy_tx),

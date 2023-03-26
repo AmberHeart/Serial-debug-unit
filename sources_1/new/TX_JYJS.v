@@ -11,7 +11,7 @@ module uart_tx(
 
     reg cs = 0;
     reg [7:0] SOR = 8'hff;
-    reg [2:0] CNT = 0;
+    reg [3:0] CNT = 0;
     reg rdy = 1;
     assign rdy_tx = rdy;
 
@@ -38,7 +38,7 @@ module uart_tx(
                 end
                 1: begin 
                     CNT <= CNT + 1;
-                    if (&CNT) begin
+                    if (CNT[3]) begin
                         cs <= 0;
                         rdy <= 1;
                     end
