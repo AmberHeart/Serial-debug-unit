@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module PRINT(
+module Print(
     input clk,
     input rstn,
     input [31:0] dout_tx,
