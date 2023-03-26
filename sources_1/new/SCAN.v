@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module SCAN(
+module SCAN_WYL(
     input clk,
     input rstn,
     input [7:0] d_rx,
@@ -74,7 +74,7 @@ module SCAN(
             if(vld_rx == 1 && rdy_rx == 0)
             begin
                 if(flag_rx == 1)
-                    next_state <= ENTER;
+                    next_state = ENTER;
                 else
                 begin
                     if(type_rx == 0)

@@ -57,7 +57,7 @@ module DCP(
     reg type_rx,req_rx;
     wire flag_rx,ack_rx;
     wire [31:0] din_rx;
-    SCAN(
+    SCAN_WYL(
         .clk(clk), .rstn(rstn),
         .d_rx(d_rx),
         .vld_rx(vld_rx),   .rdy_rx(rdy_rx),
@@ -68,7 +68,7 @@ module DCP(
     reg type_tx,req_tx;
     reg [31:0] dout_tx;
     wire ack_tx;
-    PRINT(
+    PRINT_WYL(
         .clk(clk), .rstn(rstn),
         .d_tx(d_tx),
         .vld_tx(vld_tx),   .rdy_tx(rdy_tx),
