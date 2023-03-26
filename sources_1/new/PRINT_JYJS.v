@@ -23,7 +23,7 @@ module PRINT(
     wire [63:0] dout;
 
     Posedge_Selector ps(
-        .clk(clk), .rst(rst), .in(req_tx),
+        .clk(clk), .rstn(rstn), .in(req_tx),
         .out(req_tx_ps)
     );
 
@@ -53,6 +53,7 @@ module PRINT(
                 end
                 PRINT_WAIT: begin
                     if (rdy_tx && ~|count) Print_State <= PRINT_INIT;
+                    else if (rdy_tx) Print_State <= PRINT_WORD;
                 end
             endcase
         end

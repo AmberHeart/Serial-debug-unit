@@ -103,7 +103,7 @@ RX rx_test(
     .vld_rx(vld_rx),
     .rdy_rx(rdy_rx)
 );
-uart_tx tx_test(
+TX tx_test(
     .clk(dclk),
     .rstn(rstn),
     .d_tx(d_tx),
