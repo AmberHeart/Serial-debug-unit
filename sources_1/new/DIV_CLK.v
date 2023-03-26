@@ -14,5 +14,5 @@ module DIV_CLK(
         else
             cnt <= 0;
     end
-    assign div_clk = (cnt < TICKS_PER_BIT>>1);
+    assign div_clk = (cnt == TICKS_PER_BIT - 1);
 endmodule
