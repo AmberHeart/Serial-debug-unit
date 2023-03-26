@@ -2,15 +2,15 @@
 
 module CNTc(
     input clk,
-    input rst,
+    input rstn,
     input rxd,
     input vld_rx,
     output reg process
     );
     reg [15:0] cnt;
     parameter SAMPLING_TICK = 4;
-    always @(posedge clk or posedge rst) begin
-        if(rst || vld_rx)begin
+    always @(posedge clk or negedge rstn) begin
+        if(rstn || vld_rx)begin
             process<=0;
             cnt<=0;
         end else begin

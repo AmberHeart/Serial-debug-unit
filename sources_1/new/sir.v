@@ -1,24 +1,4 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 2023/03/20 15:18:27
-// Design Name: 
-// Module Name: SIR
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
-
 
 module SIR(
     input clk,
@@ -55,7 +35,7 @@ module SIR(
         else if(curr_state == START)
         begin
             if(|cntc)
-                next_state <= START;
+                next_state = START;
             else
             begin
                 if(!rxd)
@@ -106,7 +86,7 @@ module SIR(
         begin
             cntc <= cntc - 1;
             cntb <= cntb - 1;
-            SIR <= {rxd, SIR[8:1]};
+            SIR <= {rxd,SIR[8:1]};
         end
         else if(curr_state == SAVE)
         begin

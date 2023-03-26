@@ -1,28 +1,8 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 2023/03/20 16:18:47
-// Design Name: 
-// Module Name: SCAN
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
-
 
 module SCAN(
     input clk,
-    input rst,
+    input rstn,
     input [7:0] d_rx,
     input vld_rx,
     output reg rdy_rx,
@@ -37,28 +17,29 @@ module SCAN(
     parameter ADDR = 3'b010; // request an address
     parameter ENTER = 3'b011; // 0d0a
     parameter SEND = 3'b100; // send data
+    parameter TMP  = 3'b101; // temporary state
     reg [2:0] curr_state;
     reg [2:0] next_state;
     reg [4:0] cnt;
-    wire Hex;
+    /*wire Hex;
     assign Hex = (8'h30 <= d_rx && d_rx <= 8'h39) 
               || (8'h41 <= d_rx && d_rx <= 8'h46) 
-              || (8'h61 <= d_rx && d_rx <= 8'h66);
+              || (8'h61 <= d_rx && d_rx <= 8'h66);*/
     reg [7:0] C2H;
     always@(*)
     begin
         if(8'h30 <= d_rx && d_rx <= 8'h39) 
-            C2H = Hex - 8'h30;
+            C2H = d_rx - 8'h30;
         else if(8'h41 <= d_rx && d_rx <= 8'h46)
-            C2H = Hex - 8'h37;
+            C2H = d_rx - 8'h37;
         else if(8'h61 <= d_rx && d_rx <= 8'h66)
-            C2H = Hex - 8'h57;
+            C2H = d_rx - 8'h57;
         else
-            C2H = 8'h000000;
+            C2H = 8'hff;
     end
-    always@(posedge clk or posedge rst)
+    always@(posedge clk or negedge rstn)
     begin
-        if(rst)
+        if(rstn == 0)
             curr_state <= IDLE;
         else
             curr_state <= next_state;
@@ -67,7 +48,7 @@ module SCAN(
     begin
         if(curr_state == IDLE)
         begin
-            if(req_rx == 1)
+            if(req_rx == 1 && ack_rx == 0 && vld_rx == 1)
             begin
                 if(type_rx == 0)
                     next_state = BYTE;
@@ -79,32 +60,33 @@ module SCAN(
         end
         else if(curr_state == BYTE)
         begin
-            if(vld_rx == 1)
-            begin
-                if(d_rx == 8'h0d)
-                    next_state = ENTER;
-                else if(d_rx == 8'h20)
-                    next_state = BYTE;
-                else 
-                    next_state = SEND;
-            end
-            else // not valid, then wait for data
-                next_state = BYTE;
+            if(d_rx == 8'h0d || d_rx == 8'h20)
+                next_state = TMP;
+            else 
+                next_state = SEND;
         end
         else if(curr_state == ADDR)
+            next_state = TMP;
+        else if(curr_state == ENTER)
+            next_state = SEND;
+        else if(curr_state == TMP)
         begin
-            if(cnt == 8)
-                next_state = SEND;
-            else 
+            if(vld_rx == 1 && rdy_rx == 0)
             begin
-                if(vld_rx == 1)
+                if(flag_rx == 1)
+                    next_state <= ENTER;
+                else
                 begin
-                    if(d_rx == 8'h0d)
-                        next_state = ENTER;
+                    if(type_rx == 0)
+                        next_state = BYTE;
                     else
                         next_state = ADDR;
                 end
             end
+            else if(cnt == 8)
+                next_state = SEND;
+            else
+                next_state = TMP;
         end
         else if(curr_state == SEND)
             next_state = IDLE;
@@ -119,57 +101,45 @@ module SCAN(
             ack_rx <= 0; //not acknowledge
             din_rx <= 32'h00000000; //clear data
             cnt <= 0; //reset counter
-            flag_rx <= 1; 
+            flag_rx <= 0; 
         end
         else if(curr_state == BYTE)
         begin
-            rdy_rx <= 1; // ready to receive data
-            if(vld_rx == 1)
-            begin
-                if(d_rx == 8'h0d || d_rx == 8'h20) 
-                    ;// not legal, then wait for data
-                else
-                begin
-                    flag_rx <= 0;
-                    din_rx <= {24'h000000,d_rx}; 
-                end
-            end
+            rdy_rx <= 1;
+            din_rx <= {24'h000000,d_rx}; 
+            if(d_rx == 8'h0d)
+                flag_rx <= 1; // enter means empty data
             else 
-                ;// not valid, then wait for data
+                flag_rx <= 0;   
         end
         else if(curr_state == ADDR)
         begin
             rdy_rx <= 1; // ready to receive data
             if(cnt <= 7)
             begin
-                if(vld_rx == 1)
+                if(C2H[7:4] == 4'h0)
                 begin
-                    if(Hex)
-                    begin
-                        cnt <= cnt + 1;
-                        din_rx <= {din_rx[27:0],C2H[3:0]};
-                    end
-                    else 
-                        ; // not Hex, then wait for data    
+                    cnt <= cnt + 1;
+                    din_rx <= {din_rx[27:0],C2H[3:0]};
                 end
-                else
-                    ; // not valid, then wait for data
+                else if(d_rx == 8'h0d)
+                    flag_rx <= 1; // enter means empty data
+                else 
+                begin
+                    cnt <= cnt;
+                    din_rx <= din_rx;
+                end
             end
             else 
                 flag_rx <= 0; // cnt > 7, then wait for sending data      
         end
         else if(curr_state == ENTER)
         begin
-            if(vld_rx == 1)
-            begin
-                if(d_rx == 8'h0a)
-                    flag_rx <= 1;
-                else 
-                    ; // not legal, then wait for data
-            end
-            else 
-                ; // not valid, then wait for data
+            flag_rx <= 1;
+            din_rx <= {24'h0,d_rx};
         end
+        else if(curr_state == TMP)
+            rdy_rx <= 0;
         else if(curr_state == SEND)
             ack_rx <= 1; // acknowledge
         else 

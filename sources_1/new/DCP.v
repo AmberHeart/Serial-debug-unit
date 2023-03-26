@@ -22,7 +22,7 @@
 
 module DCP(
     input clk,
-    input rst,
+    input rstn,
     input [7:0] d_rx,
     input vld_rx,
     output  rdy_rx,
@@ -33,11 +33,11 @@ module DCP(
     input pc_chk,
     input [31:0] npc,
     input [31:0] pc,
-    input [31:0] IR,
-    input [31:0] A,
-    input [31:0] B,
-    input [31:0] Y,
-    input [31:0] MDR,
+    //input [31:0] IR,
+    //input [31:0] A,
+    //input [31:0] B,
+    //input [31:0] Y,
+    //input [31:0] MDR,
     output reg [31:0] addr, //for CPU
     input [31:0] dout_rf,
     input [31:0] dout_dm,
@@ -47,7 +47,8 @@ module DCP(
     output reg we_im,
     output reg clk_ld
     ////test part
-    //,output [7:0] cs
+    ,output [7:0] cs
+    ,output [7:0] sel
     //,output rqs_rx
     //,output akn_rx
     );
@@ -57,7 +58,7 @@ module DCP(
     wire flag_rx,ack_rx;
     wire [31:0] din_rx;
     SCAN(
-        .clk(clk), .rst(rst),
+        .clk(clk), .rstn(rstn),
         .d_rx(d_rx),
         .vld_rx(vld_rx),   .rdy_rx(rdy_rx),
         .type_rx(type_rx), .req_rx(req_rx),
@@ -68,7 +69,7 @@ module DCP(
     reg [31:0] dout_tx;
     wire ack_tx;
     PRINT(
-        .clk(clk), .rst(rst),
+        .clk(clk), .rstn(rstn),
         .d_tx(d_tx),
         .vld_tx(vld_tx),   .rdy_tx(rdy_tx),
         .type_tx(type_tx), .req_tx(req_tx),
@@ -103,9 +104,9 @@ module DCP(
     parameter CMD_LD = 8'h64; //
 
     // current state <= next state
-    always@(posedge clk or posedge rst)
+    always@(posedge clk or negedge rstn)
     begin
-        if(rst)
+        if(~rstn)
             curr_state <= INIT;
         else    
             curr_state <= next_state;
@@ -156,8 +157,9 @@ module DCP(
             type_rx_1ST <= 0;
             if(ack_rx == 1)
             begin
-                case(din_rx[7:0])  //read first character
+                case(din_rx[7:0])  //read first character                 
                     CMD_D: sel_mode <= CMD_D;
+                    CMD_R: sel_mode <= CMD_R;
                     default: sel_mode <= INIT;
                 endcase
             end
@@ -175,8 +177,8 @@ module DCP(
     wire [31:0] dout_D;
     wire [31:0] addr_D;
     wire finish_D;
-    DCP_D(
-        .clk(clk), .rst(rst),
+    /*DCP_D(
+        .clk(clk), .rstn(rstn),
         .sel_mode(sel_mode),
         .CMD_D(CMD_D),
         .finish_D(finish_D),
@@ -188,7 +190,22 @@ module DCP(
         .req_rx_D(req_rx_D), .type_rx_D(type_rx_D),
         .req_tx_D(req_tx_D), .type_tx_D(type_tx_D),
         .dout_D(dout_D)
-    );
+    );*/
+    wire finish_R;
+    wire [31:0] dout_R;
+    wire [31:0] addr_R;
+    wire req_tx_R,type_tx_R;
+    DCP_R(
+        .clk(clk), .rstn(rstn),
+        .sel_mode(sel_mode),
+        .CMD_R(CMD_R),
+        .finish_R(finish_R),
+        .req_tx_R(req_tx_R), .type_tx_R(type_tx_R),
+        .ack_tx(ack_tx),
+        .addr_R(addr_R),
+        .dout_rf(dout_rf),
+        .dout_R(dout_R)
+        );
 
     // sel data from child modules
     always@(*) // sel print data
@@ -213,12 +230,15 @@ module DCP(
                 addr = addr_D;
                 finish = finish_D;
             end
-            /*CMD_R: begin
-                ack_child = ack_R;
-                type_child = type_R;
-                dout_child = dout_R;
+            CMD_R: begin
+                req_rx = 0;
+                type_rx = 0;
+                req_tx = req_tx_R;
+                type_tx = type_tx_R;
+                dout_tx = dout_R;
                 addr = addr_R;
-            end*/
+                finish = finish_R;
+            end
             default: begin
                 req_rx = 0;
                 type_rx = 0;
@@ -230,9 +250,9 @@ module DCP(
             end
         endcase
     end
-
+assign sel = sel_mode;
     ////test part
-    //assign cs = curr_state;
+assign cs = curr_state;
     //assign rqs_rx = req_rx;
     //assign akn_rx = ack_rx;
 endmodule

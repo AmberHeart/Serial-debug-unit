@@ -1,6 +1,6 @@
-module SDU_test(
+module SDU_test_sure(
     input clk,
-    input rst,
+    input rstn,
     //tx
     output txd,
     //rx
@@ -24,7 +24,7 @@ always@(posedge dclk) begin
 end
 DIV_CLK div_clk(
     .clk(clk),
-    .rstn(rst),
+    .rstn(rstn),
     .div_clk(dclk)
 );
 //tx
@@ -63,7 +63,7 @@ wire [7:0] cs;
 
 DCP DCP_test(
     .clk(dclk),
-    .rst(rst),
+    .rstn(rstn),
     //rx
     .d_rx(d_rx),
     .vld_rx(vld_rx),
@@ -97,7 +97,7 @@ DCP DCP_test(
 );
 RX rx_test(
     .clk(dclk),
-    .rstn(!rst),
+    .rstn(rstn),
     .rxd(rxd),
     .d_rx(d_rx),
     .vld_rx(vld_rx),
@@ -105,7 +105,7 @@ RX rx_test(
 );
 uart_tx tx_test(
     .clk(dclk),
-    .rst(rst),
+    .rstn(rstn),
     .d_tx(d_tx),
     .vld_tx(vld_tx),
     .rdy_tx(rdy_tx),
