@@ -1,33 +1,13 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 2023/03/20 16:15:34
-// Design Name: 
-// Module Name: DCP
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
-
 
 module DCP(
     input clk,
     input rstn,
     input [7:0] d_rx,
     input vld_rx,
-    output  rdy_rx,
+    output rdy_rx,
     output [7:0] d_tx,
-    output  vld_tx,
+    output vld_tx,
     input rdy_tx,
     output reg clk_cpu,
     input pc_chk,
@@ -45,19 +25,17 @@ module DCP(
     output reg [31:0] din,
     output reg we_dm,
     output reg we_im,
-    output reg clk_ld
-    ////test part
-    ,output [7:0] cs
-    ,output [7:0] sel
-    //,output rqs_rx
-    //,output akn_rx
+    output reg clk_ld,
+    //test
+    output [7:0] cs,
+    output [7:0] sel
     );
 
     //instantiate SCAN and PRINT
     reg type_rx,req_rx;
     wire flag_rx,ack_rx;
     wire [31:0] din_rx;
-    SCAN_WYL(
+    SCAN(
         .clk(clk), .rstn(rstn),
         .d_rx(d_rx),
         .vld_rx(vld_rx),   .rdy_rx(rdy_rx),
@@ -68,7 +46,7 @@ module DCP(
     reg type_tx,req_tx;
     reg [31:0] dout_tx;
     wire ack_tx;
-    PRINT_WYL(
+    PRINT(
         .clk(clk), .rstn(rstn),
         .d_tx(d_tx),
         .vld_tx(vld_tx),   .rdy_tx(rdy_tx),
@@ -81,11 +59,15 @@ module DCP(
     // FSM
     reg [7:0] sel_mode;
     reg finish;
-    reg [7:0] curr_state = 0;
+    reg [7:0] curr_state;
     reg [7:0] next_state;
+    //assign sel = dout_tx[7:0];
+    assign cs = curr_state;
+    //assign sel = {req_rx,sel_mode[6:0]};
     parameter INIT = 8'h00; // initialize
     parameter REQ_1ST = 8'h01; // read first character
     parameter WAIT = 8'h02; // wait for child mode
+    parameter FAIL = 8'hFF; // fail
     // states for CMD
     //suggest to use CNT to read arguments
     parameter CMD_P = 8'h50; // 
@@ -106,7 +88,7 @@ module DCP(
     // current state <= next state
     always@(posedge clk or negedge rstn)
     begin
-        if(~rstn)
+        if(!rstn)
             curr_state <= INIT;
         else    
             curr_state <= next_state;
@@ -114,34 +96,30 @@ module DCP(
     // next state = f(current state,input)
     always@(*)
     begin
-        case(curr_state)
-            INIT: next_state = REQ_1ST;
-            REQ_1ST: begin
-                if(ack_rx == 1)
-                begin
-                    /*case(din_rx)
-                        CMD_P: next_state = CMD_P;
-                        CMD_D: next_state = CMD_D;
-                        default: next_state = REQ_1ST;
-                    endcase*/
-                    next_state = WAIT;
-                end
-                else
-                    next_state = REQ_1ST;             
-            end
-            //CMD_D: next_state = WAIT;
-            WAIT: begin
-                if(finish) //finish is a signal from child module
-                    next_state = INIT;
-                else
-                    next_state = WAIT;
-            end
-            default: next_state = curr_state;
-        endcase
+        if(curr_state == INIT)
+            next_state = REQ_1ST;
+        else if(curr_state == REQ_1ST)
+        begin
+            if(ack_rx == 1)
+                next_state = WAIT;
+            else
+                next_state = REQ_1ST;             
+        end
+        else if(curr_state == WAIT)
+        begin
+            if(finish) //finish is a signal from child module
+                next_state = INIT;
+            else
+                next_state = WAIT;
+        end
+        else    
+            next_state = curr_state;
     end
     //output <= g(current state,input)
     reg req_rx_1ST;
     reg type_rx_1ST;
+    //reg [7:0] count = 0;
+    //assign sel = count;
     always@(posedge clk)
     begin
         if(curr_state == INIT)
@@ -157,12 +135,18 @@ module DCP(
             type_rx_1ST <= 0;
             if(ack_rx == 1)
             begin
-                case(din_rx[7:0])  //read first character                 
-                    CMD_D: sel_mode <= CMD_D;
-                    CMD_R: sel_mode <= CMD_R;
-                    default: sel_mode <= INIT;
-                endcase
+                if(flag_rx == 0)
+                begin
+                    case(din_rx[7:0]) //read first character
+                        CMD_R: sel_mode <= CMD_R;
+                        default: sel_mode <= FAIL;
+                    endcase
+                end
+                else
+                    sel_mode <= FAIL;
             end
+            else
+                ;
         end
         else if(curr_state == WAIT)
             ;
@@ -173,12 +157,13 @@ module DCP(
 
     // instantiate child modules 
     //wire finish_D;
+    /*
     wire req_rx_D,req_tx_D,type_rx_D,type_tx_D;
     wire [31:0] dout_D;
     wire [31:0] addr_D;
     wire finish_D;
-    /*DCP_D(
-        .clk(clk), .rstn(rstn),
+    DCP_D(
+        .clk(clk), .rst(rst),
         .sel_mode(sel_mode),
         .CMD_D(CMD_D),
         .finish_D(finish_D),
@@ -205,6 +190,7 @@ module DCP(
         .addr_R(addr_R),
         .dout_rf(dout_rf),
         .dout_R(dout_R)
+        ,.cs(sel)
         );
 
     // sel data from child modules
@@ -220,7 +206,7 @@ module DCP(
                 addr = 32'h0000_0000;
                 finish = 1;
             end
-            
+            /*
             CMD_D: begin
                 req_rx = req_rx_D;
                 type_rx = type_rx_D;
@@ -229,7 +215,7 @@ module DCP(
                 dout_tx = dout_D;
                 addr = addr_D;
                 finish = finish_D;
-            end
+            end*/
             CMD_R: begin
                 req_rx = 0;
                 type_rx = 0;
@@ -238,6 +224,15 @@ module DCP(
                 dout_tx = dout_R;
                 addr = addr_R;
                 finish = finish_R;
+            end
+            FAIL: begin
+                req_rx = 0;
+                type_rx = 0;
+                req_tx = 0;
+                type_tx = 0;
+                dout_tx = 32'h0000_0000;
+                addr = 32'h0000_0000;
+                finish = 1;
             end
             default: begin
                 req_rx = 0;
@@ -250,9 +245,4 @@ module DCP(
             end
         endcase
     end
-assign sel = sel_mode;
-    ////test part
-assign cs = curr_state;
-    //assign rqs_rx = req_rx;
-    //assign akn_rx = ack_rx;
 endmodule
