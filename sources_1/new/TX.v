@@ -1,63 +1,74 @@
 `timescale 1ns / 1ps
 
-module uart_tx(
-    input clk,
+module TX(
+    input clk,//16*9600Hz
     input rstn,
-    input [7:0] d_tx,
-    input vld_tx,//vld需要其他模块输入，可以理解为发送使能
-    output rdy_tx,//rdy只是遵循协议，其实PC不管这个
-    output reg txd
-);
-
-reg [3:0] CNT;
-reg [15:0] fr_div;
-reg [8:0] SOR;
-// reg [3:0] CNT;
-parameter TICKS_PER_BIT = 15; 
-RDY rdy(
-    .vld_tx(vld_tx),
-    .rstn(rstn),
-    .clk(clk),
-    .CNT(CNT),
-    .rdy_tx(rdy_tx),
-    .fr_div(fr_div)
-);
-
-// reg [15:0] fr_div;
-always @(posedge clk or negedge rstn) begin
-    if(~rstn)begin
-        fr_div<=0;
-    end else if(fr_div==TICKS_PER_BIT) begin
-        fr_div<=0;
-    end else begin
-        fr_div<=fr_div+1;
+    output reg txd,//urat signal
+    input vld_tx,//1 indicates that data has been received and is waiting for other modules to take it away
+    output reg rdy_tx,//1 means ready to accept new data, 0 otherwise.
+    input [7:0] d_tx
+    );
+    parameter IDLE = 3'b000; // free state 
+    parameter START = 3'b001; // receive to start 
+    parameter SEND = 3'b010; // send data
+    reg [2:0] curr_state;
+    reg [2:0] next_state;
+    reg [8:0] SOR;
+    reg [4:0] cntb;
+    reg [5:0] cntc;
+    always@(*)
+    begin
+        case(curr_state)
+            IDLE: begin
+                if(vld_tx == 1)
+                    next_state = START;
+                else
+                    next_state = IDLE;
+            end
+            START: next_state = SEND;
+            SEND: begin
+                if(cntb == 0)
+                    next_state = IDLE;
+                else
+                    next_state = SEND;
+            end
+            default: next_state = curr_state;
+        endcase
     end
-end
-always @(posedge clk or negedge rstn) begin
-    if(~rstn)begin
-        CNT<=0;
-    end else if(fr_div==0)begin
-        if(CNT)begin
-            CNT<=CNT-1;
-        end else if(rdy_tx&&vld_tx) begin
-            CNT<=8;
-        end
+    always@(posedge clk or negedge rstn)
+    begin
+        if(rstn == 0)
+            curr_state <= IDLE;
+        else
+            curr_state <= next_state;
     end
-end
-always @(posedge clk) begin
-    if(fr_div==0)begin
-        if(rdy_tx&&vld_tx)begin
-            SOR<={d_tx[7:0],1'b0};
-            txd<=0;
+    always@(posedge clk)
+    begin
+        if(curr_state == IDLE)
+        begin
+            txd <= 1;
+            rdy_tx <= 1;
         end
-        else if(CNT)begin
-            SOR<={1'b1,SOR[8:1]};
-            txd<=SOR[1];
+        else if(curr_state == START)
+        begin
+            rdy_tx <= 0;
+            SOR <= {d_tx,1'b0};
+            cntb <= 10;
+            cntc <= 0;
         end
-        else begin
-            SOR<=9'b1111_11111;
-            txd<=1'b1;
+        else if(curr_state == SEND)
+        begin
+            txd <= SOR[0];
+            if(cntc == 15)
+            begin
+                SOR <= {1'b1,SOR[8:1]};
+                cntc <= 0;
+                cntb <= cntb - 1;
+            end
+            else
+                cntc <= cntc + 1;
         end
+        else
+            ;
     end
-end
-endmodule 
+endmodule
