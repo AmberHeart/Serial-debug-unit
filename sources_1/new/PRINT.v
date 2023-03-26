@@ -1,108 +1,120 @@
+`timescale 1ns / 1ps
+
 module PRINT(
-    input clk, rstn,
-    input [31:0] dout_tx,   //data to be printed (from DCP)
-    input type_tx,          //0 stand for Byte, 1 stand for Word (from DCP)
-    input req_tx,           //request to send (from DCP)
-    input rdy_tx,           //ready to send (from tx)
-    output reg vld_tx,      //valid to send (to tx)
-    output reg [7:0] d_tx,  //data to send (to tx)
-    output reg ack_tx       //acknowledge to send (to DCP)
-);
-    reg [2:0] count = 0; //count for how many Bytes left to send
-    reg underline = 1;  //whether to output the underline
-    wire req_tx_ps; //positive edge selector for req_tx
-
-    //finite state machine
-    parameter [1:0] PRINT_INIT = 0,
-                    PRINT_BYTE = 1,
-                    PRINT_WORD = 2,
-                    PRINT_WAIT = 3;
-    reg [1:0] Print_State = PRINT_INIT;
-
-    //h2c module variables
-    wire [63:0] dout;
-
-    Posedge_Selector ps(
-        .clk(clk), .rst(rst), .in(req_tx),
-        .out(req_tx_ps)
+    input clk,
+    input rstn,
+    input [31:0] dout_tx,
+    input type_tx,
+    input req_tx,
+    output reg ack_tx,
+    output reg [7:0] d_tx,
+    output reg vld_tx,
+    input rdy_tx
     );
-
-    h2c hextochar (
-        .clka(clk),    // input wire clka
-        .addra(dout_tx[31:16]),  // input wire [15 : 0] addra
-        .douta(dout[63:32]),  // output wire [31 : 0] douta
-        .clkb(clk),    // input wire clkb
-        .addrb(dout_tx[15:0]),  // input wire [15 : 0] addrb
-        .doutb(dout[31:0])  // output wire [31 : 0] doutb
-    );
-
-    always @(posedge clk or negedge rstn) begin
-        if (~rstn) Print_State <= PRINT_INIT;
-        else begin
-            case (Print_State)
-                PRINT_INIT: begin
-                    if (req_tx_ps) 
-                        if (~type_tx) Print_State <= PRINT_BYTE;
-                        else Print_State <= PRINT_WORD;
-                end
-                PRINT_BYTE: begin
-                    Print_State <= PRINT_WAIT;
-                end
-                PRINT_WORD: begin
-                    Print_State <= PRINT_WAIT;
-                end
-                PRINT_WAIT: begin
-                    if (rdy_tx && ~|count) Print_State <= PRINT_INIT;
-                end
-            endcase
-        end
+    parameter IDLE = 3'b000;
+    parameter BYTE = 3'b001;
+    parameter WORD = 3'b010;
+    parameter WAIT = 3'b100;
+    parameter ACK = 3'b101;
+    parameter TMP = 3'b110;
+    reg [2:0] curr_state;
+    reg [2:0] next_state;
+    always@(posedge clk or negedge rstn)
+    begin
+        if(rstn == 0)
+            curr_state <= IDLE;
+        else
+            curr_state <= next_state;
     end
-
-always @(posedge clk) begin
-    case (Print_State) 
-        PRINT_INIT: begin
-            vld_tx <= 0;
-            d_tx <= 0;
-            ack_tx <= 0;
-            count <= 0;
-        end
-        PRINT_BYTE: begin
-            vld_tx <= 1;
-            d_tx <= dout_tx[7:0];
-            ack_tx <= 0;
-            count <= 0;
-        end
-        PRINT_WORD: begin
-            vld_tx <= 1;
-            ack_tx <= 0;
-            count <= count - 1;
-            case (count)
-                0: d_tx <= dout[63:56];
-                7: d_tx <= dout[55:48];
-                6: d_tx <= dout[47:40];
-                5: d_tx <= dout[39:32];
-                4: begin 
-                    if (underline) begin
-                        d_tx <= 8'h5F;
-                        underline <= 0;
-                    end
-                    else begin
-                        d_tx <= dout[31:24];
-                        underline <= 1;
-                    end
+    reg [4:0] cnt; 
+    wire [7:0] h2c;
+    reg [3:0] mux;
+    H2C H2C(.Hex(mux),.ASC(h2c));
+    always@(*)
+    begin
+        case(cnt)
+            7: mux = dout_tx[3:0];
+            6: mux = dout_tx[7:4];
+            5: mux = dout_tx[11:8];
+            4: mux = dout_tx[15:12];
+            3: mux = dout_tx[19:16];
+            2: mux = dout_tx[23:20];
+            1: mux = dout_tx[27:24];
+            0: mux = dout_tx[31:28];
+            default: mux = 4'h0;
+        endcase
+    end
+    always@(*)
+    begin
+        case(curr_state)
+            IDLE: begin
+                if(req_tx == 1 && rdy_tx == 1 && ack_tx == 0)
+                begin
+                    if(type_tx == 0)
+                        next_state = BYTE;
+                    else
+                        next_state = WORD;
                 end
-                3: d_tx <= dout[23:16];
-                2: d_tx <= dout[15:8];
-                1: d_tx <= dout[7:0];
-            endcase
+                else
+                    next_state = IDLE;
+            end
+            BYTE: next_state = TMP;
+            WORD: next_state = TMP;
+            TMP: begin
+                if(vld_tx == 1 && rdy_tx == 0)
+                    next_state = WAIT;
+                else   
+                    next_state = TMP;
+            end
+            WAIT: begin
+                if(vld_tx == 0 && rdy_tx == 1)
+                begin
+                    if(type_tx == 0 || cnt == 8)
+                        next_state = ACK;
+                    else
+                        next_state = WORD;
+                end
+                else
+                    next_state = WAIT;
+            end
+            ACK: next_state = IDLE;
+            default: next_state = curr_state;
+        endcase
+    end
+    always@(posedge clk)
+    begin
+        if(curr_state == IDLE)
+        begin
+            vld_tx <= 0;
+            ack_tx <= 0;
+            cnt <= 0;
         end
-        PRINT_WAIT: begin
-            if (rdy_tx) begin
+        else if(curr_state == BYTE)
+        begin
+            d_tx <= dout_tx[7:0];
+            vld_tx <= 1;
+        end
+        else if(curr_state == WORD)
+        begin                
+            d_tx <= h2c;
+            if(cnt == 8)
+            begin
+                cnt <= cnt + 1;
+                vld_tx <= 0;    
+            end
+            else
+            begin
+                cnt <= cnt + 1;
                 vld_tx <= 1;
-                if (count == 0) ack_tx <= 1;
             end
         end
-    endcase
-end
-    
+        else if(curr_state == TMP)
+            ;
+        else if(curr_state == WAIT)
+            vld_tx <= 0;
+        else if(curr_state == ACK)
+            ack_tx <= 1;
+        else
+            ;
+    end
 endmodule
