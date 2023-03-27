@@ -42,7 +42,7 @@ module SDU_test_wyl(
     wire clk_ld;
     wire [7:0] r;
     wire [7:0] t;
-    SDU_wyl SDU_wyl(
+    SDU SDU_wyl(
         .clk(clk),
         .rstn(rstn),
         .rxd(rxd),
