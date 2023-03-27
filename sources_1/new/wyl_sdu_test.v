@@ -24,6 +24,8 @@ module SDU_test_wyl(
     input clk,
     input rstn,
     input rxd,
+    input [1:0]sw,
+    output type_rx,
     output txd,
     output [7:0] scan_w,
     output [7:0] print_w
@@ -60,7 +62,9 @@ module SDU_test_wyl(
         .we_im(we_im),
         .clk_ld(clk_ld),
         .cs(scan_w),
-        .sel(print_w)
+        .sel(print_w),
+        .sw(sw),
+        .type_rx(type_rx)
         //.r(r),
         //.t(t)
     );
