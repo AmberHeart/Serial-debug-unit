@@ -6,22 +6,29 @@ module DCP_R(
     input [7:0] sel_mode,
     input [7:0] CMD_R,
     output reg finish_R,
+    input [31:0] din_rx,
+    output reg req_rx_R,
+    output reg type_rx_R,
+    input flag_rx,
+    input ack_rx,
     output reg req_tx_R,
+    output reg type_tx_R,
     input ack_tx,
     output reg [31:0] addr_R,
     input [31:0] dout_rf,
-    output reg type_tx_R,
     output reg [31:0] dout_R,
     //test
     output [7:0] cs
     );
 
-    reg [1:0] curr_state;
-    reg [1:0] next_state;
-    parameter IDLE = 2'b00;
-    parameter TEST = 2'b01;
-    parameter WAIT = 2'b10;
-    parameter CHK = 2'b11;
+    reg [2:0] curr_state;
+    reg [2:0] next_state;
+    parameter IDLE = 3'b000;
+    parameter PRINT = 3'b001;
+    parameter WAITP = 3'b010;
+    parameter CHK = 3'b011;
+    parameter SCAN = 3'b100;
+    parameter WAITS = 3'b101;
     always@(posedge clk or negedge rstn)
     begin
         if(rstn == 0)
@@ -32,26 +39,36 @@ module DCP_R(
     wire we = (sel_mode == CMD_R);
     reg [1:0] cnt;
     reg [7:0] count = 8'h00;
-    assign cs = count;
+    assign cs = {5'b0,curr_state};
+    reg [31:0] last_addr = 32'h0;
     always@(*)
     begin
         if(we)
         begin
             if(curr_state == IDLE)
-                next_state = TEST;
-            else if(curr_state == TEST)
-                next_state = WAIT;
-            else if(curr_state == WAIT)
+                next_state = SCAN;
+            else if(curr_state == SCAN)
+                next_state = WAITS;
+            else if(curr_state == WAITS)
+            begin
+                if(ack_rx == 1)
+                    next_state = PRINT;
+                else    
+                    next_state = WAITS;
+            end
+            else if(curr_state == PRINT)
+                next_state = WAITP;
+            else if(curr_state == WAITP)
             begin
                 if(ack_tx == 1)
                 begin
                     if(cnt == 2)
                         next_state = CHK;
                     else
-                        next_state = TEST;
+                        next_state = PRINT;
                 end
                 else
-                    next_state = WAIT;
+                    next_state = WAITP;
             end
             else if(curr_state == CHK)
                 next_state = IDLE;
@@ -66,24 +83,43 @@ module DCP_R(
         if(curr_state == IDLE)
         begin
             finish_R <= 0;
+            req_rx_R <= 0;
+            type_rx_R <= 0;
             req_tx_R <= 0;
             type_tx_R <= 0;
             dout_R <= 0;
             addr_R <= 32'h0;
             cnt <= 0;
         end
-        else if(curr_state == TEST)
+        else if(curr_state == SCAN)
+        begin
+            req_rx_R <= 1;
+            type_rx_R <= 1;
+        end
+        else if(curr_state == WAITS)
+        begin
+            if(ack_rx == 1)
+            begin
+                req_rx_R <= 0;
+                if(flag_rx == 0)
+                    last_addr <= din_rx;
+                else
+                    last_addr <= last_addr;
+            end
+            else
+                ;
+        end
+        else if(curr_state == PRINT)
         begin
             req_tx_R <= 1;
-            //type_tx_R <= 0;
             cnt <= cnt + 1;
             case(cnt)
                 2'b00: begin type_tx_R <= 0; dout_R <= {24'h0,CMD_R};end
-                2'b01: begin type_tx_R <= 1; dout_R <= 32'h1357_9bdf;end
+                2'b01: begin type_tx_R <= 1; dout_R <= last_addr;end
                 default: dout_R <= 32'h0;
             endcase
         end
-        else if(curr_state == WAIT)
+        else if(curr_state == WAITP)
         begin
             if(ack_tx == 1)
             begin
@@ -96,7 +132,7 @@ module DCP_R(
         begin
             cnt <= 0;
             finish_R <= 1;
-            count <= count + 1;
+            last_addr <= last_addr + 1;
         end
         else
             ;
