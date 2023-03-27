@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module PRINT_WYL(
+module PRINT(
     input clk,
     input rstn,
     input [31:0] dout_tx,
@@ -17,6 +17,7 @@ module PRINT_WYL(
     parameter WAIT = 3'b100;
     parameter ACK = 3'b101;
     parameter TMP = 3'b110;
+    parameter SPACE = 3'b111;
     reg [2:0] curr_state;
     reg [2:0] next_state;
     always@(posedge clk or negedge rstn)
@@ -33,10 +34,10 @@ module PRINT_WYL(
     always@(*)
     begin
         case(cnt)
-            7: mux = dout_tx[3:0];
-            6: mux = dout_tx[7:4];
-            5: mux = dout_tx[11:8];
-            4: mux = dout_tx[15:12];
+            8: mux = dout_tx[3:0];
+            7: mux = dout_tx[7:4];
+            6: mux = dout_tx[11:8];
+            5: mux = dout_tx[15:12];
             3: mux = dout_tx[19:16];
             2: mux = dout_tx[23:20];
             1: mux = dout_tx[27:24];
@@ -59,20 +60,26 @@ module PRINT_WYL(
                     next_state = IDLE;
             end
             BYTE: next_state = TMP;
-            WORD: next_state = TMP;
+            WORD: next_state = TMP;         
+            SPACE: next_state = TMP;
             TMP: begin
                 if(vld_tx == 1 && rdy_tx == 0)
                     next_state = WAIT;
                 else   
                     next_state = TMP;
-            end
+            end            
             WAIT: begin
                 if(vld_tx == 0 && rdy_tx == 1)
                 begin
-                    if(type_tx == 0 || cnt == 8)
+                    if(type_tx == 0 || cnt == 10)
                         next_state = ACK;
                     else
-                        next_state = WORD;
+                    begin
+                        if(cnt == 4 || cnt == 9)
+                            next_state = SPACE;
+                        else
+                            next_state = WORD;
+                    end
                 end
                 else
                     next_state = WAIT;
@@ -97,17 +104,20 @@ module PRINT_WYL(
         else if(curr_state == WORD)
         begin                
             d_tx <= h2c;
-            if(cnt == 8)
-            begin
-                cnt <= cnt + 1;
-                vld_tx <= 0;    
-            end
-            else
-            begin
-                cnt <= cnt + 1;
-                vld_tx <= 1;
-            end
+            cnt <= cnt + 1;
+            vld_tx <= 1;
         end
+        else if(curr_state == SPACE)
+        begin
+            d_tx <= 8'h5F;
+            vld_tx <= 1;
+            case(cnt)
+                4: d_tx <= 8'h5F;
+                9: d_tx <= 8'h20;
+                default: d_tx <= 8'h00;
+            endcase
+            cnt <= cnt + 1;
+        end 
         else if(curr_state == TMP)
             ;
         else if(curr_state == WAIT)
