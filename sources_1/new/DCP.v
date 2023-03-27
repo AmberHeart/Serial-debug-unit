@@ -25,12 +25,10 @@ module DCP(
     output reg [31:0] din,
     output reg we_dm,
     output reg we_im,
-    output reg clk_ld,
+    output reg clk_ld
     //test
-    input [1:0] sw,
-    output [7:0] cs,
-    output reg [7:0] sel,
-    output red
+    ,output [7:0] cs,
+    output [7:0] sel 
     );
 
     //instantiate SCAN and PRINT
@@ -56,29 +54,13 @@ module DCP(
         .ack_tx(ack_tx),
         .dout_tx(dout_tx)
         );
-
-        //test
-        assign red = type_rx;
-    always @(*)begin
-        if ((|din_rx) & ack_rx)
-        case(sw)
-            0: sel = din_rx[7:0];
-            1: sel = din_rx[15:8];
-            2: sel = din_rx[23:16];
-            3: sel = din_rx[31:24];
-        endcase
-    end
-
     
     // FSM
     reg [7:0] sel_mode;
     reg finish;
     reg [7:0] curr_state;
     reg [7:0] next_state;
-    //assign sel = dout_tx[7:0];
-    wire [2:0] cs_D;
-    assign cs = {5'b0,cs_D};
-    //assign sel = {req_rx,sel_mode[6:0]};
+    assign cs = curr_state;
     parameter INIT = 8'h00; // initialize
     parameter REQ_1ST = 8'h01; // read first character
     parameter WAIT = 8'h02; // wait for child mode
@@ -133,8 +115,6 @@ module DCP(
     //output <= g(current state,input)
     reg req_rx_1ST;
     reg type_rx_1ST;
-    //reg [7:0] count = 0;
-    //assign sel = count;
     always@(posedge clk)
     begin
         if(curr_state == INIT)
@@ -194,21 +174,26 @@ module DCP(
         .scan(0),
         .cs(cs_D)
     );
+    
     wire finish_R;
     wire [31:0] dout_R;
     wire [31:0] addr_R;
-    wire req_tx_R,type_tx_R;
+    wire req_rx_R, type_rx_R;
+    wire req_tx_R, type_tx_R;
     DCP_R(
         .clk(clk), .rstn(rstn),
         .sel_mode(sel_mode),
         .CMD_R(CMD_R),
         .finish_R(finish_R),
+        .din_rx(din_rx),
+        .req_rx_R(req_rx_R), .type_rx_R(type_rx_R),
+        .flag_rx(flag_rx),
+        .ack_rx(ack_rx),
         .req_tx_R(req_tx_R), .type_tx_R(type_tx_R),
         .ack_tx(ack_tx),
         .addr_R(addr_R),
         .dout_rf(dout_rf),
         .dout_R(dout_R)
-        ,.cs(0)
         );
 
     // sel data from child modules
@@ -235,8 +220,8 @@ module DCP(
                 finish = finish_D;
             end
             CMD_R: begin
-                req_rx = 0;
-                type_rx = 0;
+                req_rx = req_rx_R;
+                type_rx = type_rx_R;
                 req_tx = req_tx_R;
                 type_tx = type_tx_R;
                 dout_tx = dout_R;
