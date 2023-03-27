@@ -53,6 +53,13 @@ module SDU(
         .spo(dout_dm),  // output wire [31 : 0] spo
         .d(0)     // input wire [31 : 0] d
         );
+    test_text text (
+        .a(addr[9:0]),      // input wire [9 : 0] a
+        .d(0),      // input wire [31 : 0] d
+        .clk(div_16_9600_clk),  // input wire clk
+        .we(0),    // input wire we
+        .spo(dout_im)  // output wire [31 : 0] spo
+        );
     TX(
         .clk(div_16_9600_clk), .rstn(rstn),
         .txd(txd),

@@ -135,6 +135,7 @@ module DCP(
                     case(din_rx[7:0]) //read first character
                         CMD_R: sel_mode <= CMD_R;
                         CMD_D: sel_mode <= CMD_D;
+                        CMD_I: sel_mode <= CMD_I;
                         default: sel_mode <= FAIL;
                     endcase
                 end
@@ -175,6 +176,26 @@ module DCP(
         .cs(cs_D)
     );
     
+    wire req_rx_I,req_tx_I,type_rx_I,type_tx_I;
+    wire [31:0] dout_I;
+    wire [31:0] addr_I;
+    wire finish_I;
+    
+    DCP_I(
+        .clk(clk), .rstn(rstn),
+        .sel_mode(sel_mode),
+        .CMD_I(CMD_I),
+        .finish_I(finish_I),
+        .addr_I(addr_I),
+        .din_rx(din_rx),
+        .dout_im(dout_im),
+        .ack_rx(ack_rx), .flag_rx(flag_rx),
+        .ack_tx(ack_tx),
+        .req_rx_I(req_rx_I), .type_rx_I(type_rx_I),
+        .req_tx_I(req_tx_I), .type_tx_I(type_tx_I),
+        .dout_I(dout_I)
+    );
+
     wire finish_R;
     wire [31:0] dout_R;
     wire [31:0] addr_R;
@@ -218,6 +239,15 @@ module DCP(
                 dout_tx = dout_D;
                 addr = addr_D;
                 finish = finish_D;
+            end
+            CMD_I: begin
+                req_rx = req_rx_I;
+                type_rx = type_rx_I;
+                req_tx = req_tx_I;
+                type_tx = type_tx_I;
+                dout_tx = dout_I;
+                addr = addr_I;
+                finish = finish_I;
             end
             CMD_R: begin
                 req_rx = req_rx_R;
