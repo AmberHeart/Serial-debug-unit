@@ -42,8 +42,6 @@ module SDU_test_wyl(
     wire we_dm;
     wire we_im;
     wire clk_ld;
-    wire [7:0] r;
-    wire [7:0] t;
     SDU SDU_wyl(
         .clk(clk),
         .rstn(rstn),
@@ -60,32 +58,8 @@ module SDU_test_wyl(
         .din(din),
         .we_dm(we_dm),
         .we_im(we_im),
-        .clk_ld(clk_ld),
-        .cs(scan_w),
-        .sel(print_w),
-        .sw(sw),
-        .type_rx(type_rx)
-        //.r(r),
-        //.t(t)
+        .clk_ld(clk_ld)
+        ,.cs(scan_w)
+        ,.sel(print_w)
     );
-   
-    /*always@(posedge clk or negedge rstn) 
-    begin
-        if(!rstn)
-        begin
-            scan_w <= 8'hff;
-            print_w <= 8'hff;
-        end
-        else
-        begin
-            if(|r)
-                scan_w <= r;
-            else
-                scan_w <= scan_w;
-            if(|t)
-                print_w <= t;
-            else
-                print_w <= print_w;
-        end
-    end*/
 endmodule

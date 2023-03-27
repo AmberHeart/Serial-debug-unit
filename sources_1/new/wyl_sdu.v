@@ -22,13 +22,10 @@ module SDU(
     output [31:0] din,
     output we_dm,
     output we_im,
-    output clk_ld,
+    output clk_ld
     //test
-    output [7:0] cs,
-    output [7:0] sel,
-    output type_rx
-    //output [7:0] r,
-    //output [7:0] t
+    ,output [7:0] cs
+    ,output [7:0] sel
 );
     
     wire div_16_9600_clk;
@@ -37,24 +34,18 @@ module SDU(
         .rstn(rstn),
         .div_clk(div_16_9600_clk)
     );
-    /*wire div_9600_clk;
-    DIV_TX_CLK div_tx_clk(
-        .clk(clk),
-        .rstn(rstn),
-        .div_clk(div_9600_clk)
-    );*/
+
     wire vld_rx,rdy_rx;
     wire [7:0] d_rx;
-    //assign r = d_rx;
     RX(
         .clk(div_16_9600_clk), .rstn(rstn),
         .rxd(rxd),
         .vld_rx(vld_rx), .rdy_rx(rdy_rx),
         .d_rx(d_rx)
         );
+
     wire vld_tx,rdy_tx;
     wire [7:0] d_tx;
-    //assign t = d_tx;
     dist_mem_gen_0 your_instance_name (
         .a(addr[15:0]),      // input wire [15 : 0] a
         .clk(div_16_9600_clk),  // input wire clk
@@ -68,6 +59,7 @@ module SDU(
         .vld_tx(vld_tx), .rdy_tx(rdy_tx),
         .d_tx(d_tx)
         );
+
     DCP(
         .clk(div_16_9600_clk), .rstn(rstn),
         .d_rx(d_rx), .vld_rx(vld_rx), .rdy_rx(rdy_rx),
@@ -88,11 +80,9 @@ module SDU(
         .din(din),
         .we_dm(we_dm),
         .we_im(we_im),
-        .clk_ld(clk_ld),
+        .clk_ld(clk_ld)
         //test
-        .cs(cs),
-        .sel(sel),
-        .sw(sw),
-        .red(type_rx)
+        ,.cs(cs)
+        ,.sel(sel)
         );
 endmodule

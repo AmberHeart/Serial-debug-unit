@@ -27,8 +27,8 @@ module DCP(
     output reg we_im,
     output reg clk_ld
     //test
-    ,output [7:0] cs,
-    output [7:0] sel 
+    ,output [7:0] cs
+    ,output [7:0] sel 
     );
 
     //instantiate SCAN and PRINT
