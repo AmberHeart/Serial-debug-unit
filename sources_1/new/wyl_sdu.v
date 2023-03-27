@@ -18,16 +18,19 @@ module SDU(
     input [31:0] dout_rf,
     input [31:0] dout_dm,
     input [31:0] dout_im,
+    input [1:0] sw,
     output [31:0] din,
     output we_dm,
     output we_im,
     output clk_ld,
     //test
     output [7:0] cs,
-    output [7:0] sel
+    output [7:0] sel,
+    output type_rx
     //output [7:0] r,
     //output [7:0] t
 );
+    
     wire div_16_9600_clk;
     DIV_RX_CLK div_rx_clk(
         .clk(clk),
@@ -52,6 +55,13 @@ module SDU(
     wire vld_tx,rdy_tx;
     wire [7:0] d_tx;
     //assign t = d_tx;
+    dist_mem_gen_0 your_instance_name (
+        .a(addr[15:0]),      // input wire [15 : 0] a
+        .clk(div_16_9600_clk),  // input wire clk
+        .we(0),    // input wire we
+        .spo(dout_dm),  // output wire [31 : 0] spo
+        .d(0)     // input wire [31 : 0] d
+        );
     TX(
         .clk(div_16_9600_clk), .rstn(rstn),
         .txd(txd),
@@ -81,6 +91,8 @@ module SDU(
         .clk_ld(clk_ld),
         //test
         .cs(cs),
-        .sel(sel)
+        .sel(sel),
+        .sw(sw),
+        .red(type_rx)
         );
 endmodule

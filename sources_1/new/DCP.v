@@ -27,8 +27,10 @@ module DCP(
     output reg we_im,
     output reg clk_ld,
     //test
+    input [1:0] sw,
     output [7:0] cs,
-    output [7:0] sel
+    output reg [7:0] sel,
+    output red
     );
 
     //instantiate SCAN and PRINT
@@ -55,6 +57,18 @@ module DCP(
         .dout_tx(dout_tx)
         );
 
+        //test
+        assign red = type_rx;
+    always @(*)begin
+        if ((|din_rx) & ack_rx)
+        case(sw)
+            0: sel = din_rx[7:0];
+            1: sel = din_rx[15:8];
+            2: sel = din_rx[23:16];
+            3: sel = din_rx[31:24];
+        endcase
+    end
+
     
     // FSM
     reg [7:0] sel_mode;
@@ -62,7 +76,8 @@ module DCP(
     reg [7:0] curr_state;
     reg [7:0] next_state;
     //assign sel = dout_tx[7:0];
-    assign cs = curr_state;
+    wire [2:0] cs_D;
+    assign cs = {5'b0,cs_D};
     //assign sel = {req_rx,sel_mode[6:0]};
     parameter INIT = 8'h00; // initialize
     parameter REQ_1ST = 8'h01; // read first character
@@ -139,6 +154,7 @@ module DCP(
                 begin
                     case(din_rx[7:0]) //read first character
                         CMD_R: sel_mode <= CMD_R;
+                        CMD_D: sel_mode <= CMD_D;
                         default: sel_mode <= FAIL;
                     endcase
                 end
@@ -156,14 +172,14 @@ module DCP(
 
 
     // instantiate child modules 
-    //wire finish_D;
-    /*
+    
     wire req_rx_D,req_tx_D,type_rx_D,type_tx_D;
     wire [31:0] dout_D;
     wire [31:0] addr_D;
     wire finish_D;
+    
     DCP_D(
-        .clk(clk), .rst(rst),
+        .clk(clk), .rstn(rstn),
         .sel_mode(sel_mode),
         .CMD_D(CMD_D),
         .finish_D(finish_D),
@@ -174,8 +190,10 @@ module DCP(
         .ack_tx(ack_tx),
         .req_rx_D(req_rx_D), .type_rx_D(type_rx_D),
         .req_tx_D(req_tx_D), .type_tx_D(type_tx_D),
-        .dout_D(dout_D)
-    );*/
+        .dout_D(dout_D),
+        .scan(0),
+        .cs(cs_D)
+    );
     wire finish_R;
     wire [31:0] dout_R;
     wire [31:0] addr_R;
@@ -190,7 +208,7 @@ module DCP(
         .addr_R(addr_R),
         .dout_rf(dout_rf),
         .dout_R(dout_R)
-        ,.cs(sel)
+        ,.cs(0)
         );
 
     // sel data from child modules
@@ -206,7 +224,7 @@ module DCP(
                 addr = 32'h0000_0000;
                 finish = 1;
             end
-            /*
+            
             CMD_D: begin
                 req_rx = req_rx_D;
                 type_rx = type_rx_D;
@@ -215,7 +233,7 @@ module DCP(
                 dout_tx = dout_D;
                 addr = addr_D;
                 finish = finish_D;
-            end*/
+            end
             CMD_R: begin
                 req_rx = 0;
                 type_rx = 0;

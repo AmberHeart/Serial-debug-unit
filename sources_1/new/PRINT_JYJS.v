@@ -1,4 +1,4 @@
-module PRINT(
+module PRINT_J(
     input clk, rstn,
     input [31:0] dout_tx,   //data to be printed (from DCP)
     input type_tx,          //0 stand for Byte, 1 stand for Word (from DCP)

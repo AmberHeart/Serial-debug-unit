@@ -11,7 +11,7 @@ module print_tb(
     wire [7:0] d_tx;
     reg [31:0] dout_tx = 31'h00000031;
     reg type_tx = 1, req_tx = 0, rstn = 1;
-    PRINT print_D(
+    PRINT_J print_D(
         .clk(clk), .rstn(rstn),
         .dout_tx(dout_tx),
         .type_tx(type_tx),
@@ -30,6 +30,28 @@ module print_tb(
         .txd(txd)
     );
 
+    wire vld_tx_w, ack_tx_w, txd_w, rdy_tx_w;
+    wire [7:0] d_tx_w;
+
+    PRINT print_W(
+        .clk(clk), .rstn(rstn),
+        .dout_tx(dout_tx),
+        .type_tx(type_tx),
+        .req_tx(req_tx),
+        .ack_tx(ack_tx_w),
+        .d_tx(d_tx_w),
+        .vld_tx(vld_tx_w),
+        .rdy_tx(rdy_tx_w)
+    );
+
+    TX tx_W(
+        .clk(clk), .rstn(rstn),
+        .d_tx(d_tx_w),
+        .vld_tx(vld_tx_w),
+        .rdy_tx(rdy_tx_w),
+        .txd(txd_w)
+    );
+
     initial begin
         #10 rstn = 0;
         #2 rstn = 1;
@@ -46,4 +68,3 @@ end
 
 
 endmodule
-

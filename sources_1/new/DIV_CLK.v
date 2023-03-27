@@ -1,4 +1,4 @@
-module DIV_CLK(
+module DIV_RX_CLK(
     input clk,//100MHz
     input rstn,
     output div_clk//16*9600 HZ

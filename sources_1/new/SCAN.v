@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module SCAN_WYL(
+module SCAN(
     input clk,
     input rstn,
     input [7:0] d_rx,
