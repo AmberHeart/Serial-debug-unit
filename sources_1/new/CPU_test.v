@@ -10,6 +10,7 @@ module CPU_test(
     output [31:0] B,
     output [31:0] Y,
     output [31:0] MDR,
+    output [31:0] IMM,
     input [31:0] addr,
     output [31:0] dout_rf,
     output [31:0] dout_dm,
@@ -26,6 +27,7 @@ module CPU_test(
     reg [31:0] A_reg;
     reg [31:0] B_reg;
     reg [31:0] Y_reg;
+    reg [31:0] IMM_reg;
     reg [31:0] MDR_reg;
     reg [31:0] dout_rf_reg;
 
