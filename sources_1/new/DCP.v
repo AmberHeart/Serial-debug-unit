@@ -10,7 +10,7 @@ module DCP(
     output vld_tx,
     input rdy_tx,
     output reg clk_cpu,
-    input pc_chk,
+    input [31:0] pc_chk,
     input [31:0] npc,
     input [31:0] pc,
     input [31:0] IR,
@@ -139,6 +139,7 @@ module DCP(
                         CMD_I: sel_mode <= CMD_I;
                         CMD_P: sel_mode <= CMD_P;
                         CMD_T: sel_mode <= CMD_T;
+                        CMD_B: sel_mode <= CMD_B;
                         default: sel_mode <= FAIL;
                     endcase
                 end
@@ -233,6 +234,25 @@ module DCP(
         ,.clk_cpu(clk_cpu_T)
     );
 
+    wire req_rx_B,req_tx_B,type_rx_B,type_tx_B;
+    wire [31:0] dout_B;
+    wire finish_B;
+    wire [31:0] B_1;
+    wire [31:0] B_2;
+    DCP_B(
+        .clk(clk), .rstn(rstn),
+        .sel_mode(sel_mode),
+        .CMD_B(CMD_B),
+        .finish_B(finish_B),
+        .B_1(B_1), .B_2(B_2),
+        .din_rx(din_rx),
+        .ack_rx(ack_rx), .flag_rx(flag_rx),
+        .ack_tx(ack_tx),
+        .req_rx_B(req_rx_B), .type_rx_B(type_rx_B),
+        .req_tx_B(req_tx_B), .type_tx_B(type_tx_B),
+        .dout_B(dout_B)
+    );
+
     assign sel = {3'b0, cs_P};
     wire finish_R;
     wire [31:0] dout_R;
@@ -308,6 +328,14 @@ module DCP(
                 dout_tx = dout_T;
                 finish = finish_T;
                 clk_cpu = clk_cpu_T;
+            end
+            CMD_B: begin
+                req_rx = req_rx_B;
+                type_rx = type_rx_B;
+                req_tx = req_tx_B;
+                type_tx = type_tx_B;
+                dout_tx = dout_B;
+                finish = finish_B;
             end
             FAIL: begin
                 req_rx = 0;

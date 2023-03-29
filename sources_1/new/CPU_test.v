@@ -2,7 +2,7 @@ module CPU_test(
     input clk,
     input rstn,
     input clk_cpu,
-    output pc_chk,
+    output [31:0] pc_chk,
     output [31:0] npc,
     output [31:0] pc,
     output [31:0] IR,
@@ -21,7 +21,7 @@ module CPU_test(
     input we_im,
     input clk_ld
 );
-    reg pc_chk_reg;
+    reg [31:0] pc_chk_reg;
     reg [31:0] npc_reg;
     reg [31:0] pc_reg;
     reg [31:0] IR_reg;
@@ -33,7 +33,7 @@ module CPU_test(
     reg [31:0] MDR_reg;
     reg [31:0] dout_rf_reg;
     always@(*) begin
-        pc_chk_reg = 1;
+        pc_chk_reg = 32'h0000_0001;
         npc_reg = 32'h0000_0000;
         pc_reg = 32'h0000_0001;
         IR_reg = 32'h0000_0002;

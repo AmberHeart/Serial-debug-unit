@@ -6,7 +6,7 @@ module SDU(
     input rxd,
     output txd,
     output clk_cpu,
-    input pc_chk,
+    input [31:0] pc_chk,
     input [31:0] npc,
     input [31:0] pc,
     input [31:0] IR,

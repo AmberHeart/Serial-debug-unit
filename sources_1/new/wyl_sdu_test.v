@@ -31,7 +31,7 @@ module SDU_test_wyl(
     output [7:0] print_w
     );
     wire clk_cpu;
-    wire pc_chk;
+    wire [31:0] pc_chk;
     wire [31:0] npc;
     wire [31:0] pc;
     wire [31:0] IR;
@@ -76,7 +76,7 @@ module SDU_test_wyl(
         .rxd(rxd),
         .txd(txd),
         .clk_cpu(clk_cpu),
-        .pc_chk(pc_chk),
+        .pc_chk(pc),
         .npc(npc),
         .pc(pc),
         .IR(IR),
