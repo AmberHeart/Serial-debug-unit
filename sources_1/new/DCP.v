@@ -138,6 +138,7 @@ module DCP(
                         CMD_D: sel_mode <= CMD_D;
                         CMD_I: sel_mode <= CMD_I;
                         CMD_P: sel_mode <= CMD_P;
+                        CMD_T: sel_mode <= CMD_T;
                         default: sel_mode <= FAIL;
                     endcase
                 end
@@ -214,6 +215,24 @@ module DCP(
         .dout_P(dout_P)
         ,.cs(cs_P)
     );
+
+    wire req_tx_T, type_tx_T;
+    wire [31:0] dout_T;
+    wire finish_T;
+    wire clk_cpu_T;
+    DCP_T(
+        .clk(clk), .rstn(rstn),
+        .sel_mode(sel_mode),
+        .CMD_T(CMD_T),
+        .finish_T(finish_T),
+        .IMM(IMM), .pc(pc), .npc(npc), 
+        .IR(IR), .CTL(CTL), .A(A), .B(B), .Y(Y), .MDR(MDR),
+        .ack_tx(ack_tx), .type_tx_T(type_tx_T),
+        .req_tx_T(req_tx_T),
+        .dout_T(dout_T)
+        ,.clk_cpu(clk_cpu_T)
+    );
+
     assign sel = {3'b0, cs_P};
     wire finish_R;
     wire [31:0] dout_R;
@@ -282,6 +301,13 @@ module DCP(
                 type_tx = type_tx_P;
                 dout_tx = dout_P;
                 finish = finish_P;
+            end
+            CMD_T: begin
+                req_tx = req_tx_T;
+                type_tx = type_tx_T;
+                dout_tx = dout_T;
+                finish = finish_T;
+                clk_cpu = clk_cpu_T;
             end
             FAIL: begin
                 req_rx = 0;
