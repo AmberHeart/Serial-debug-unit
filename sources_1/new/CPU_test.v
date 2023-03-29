@@ -21,7 +21,7 @@ module CPU_test(
     input we_im,
     input clk_ld
 );
-    reg [31:0] pc_chk_reg;
+    reg [31:0] pc_chk_reg=32'h0000_0000;
     reg [31:0] npc_reg;
     reg [31:0] pc_reg;
     reg [31:0] IR_reg;
@@ -33,9 +33,9 @@ module CPU_test(
     reg [31:0] MDR_reg;
     reg [31:0] dout_rf_reg;
     always@(*) begin
-        pc_chk_reg = 32'h0000_0001;
+        
         npc_reg = 32'h0000_0000;
-        pc_reg = 32'h0000_0001;
+        pc_reg=pc_chk_reg;
         IR_reg = 32'h0000_0002;
         A_reg = 32'h0000_0003;
         B_reg = 32'h0000_0004;
@@ -44,6 +44,22 @@ module CPU_test(
         MDR_reg = 32'h0000_0007;
         CTL_reg = 32'h0000_0008;
 
+    end
+    //wire clk_cpu_ps;
+    // Posedge_Selector(clk,rstn,clk_cpu,clk_cpu_ps
+    // //input clk, rstn, in,
+    // //output reg out
+    // );
+    always@(posedge clk_cpu or negedge rstn)begin
+        if(~rstn) begin
+            pc_chk_reg <= 32'h0000_0000;
+        end
+        else if(pc_chk<32'h0000_000Ax) begin
+            pc_chk_reg <= pc_chk+1;
+            
+        end
+        else
+            pc_chk_reg <= 32'h0000_0000;
     end
     assign pc_chk = pc_chk_reg;
     assign npc = npc_reg;

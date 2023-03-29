@@ -32,6 +32,7 @@ module DCP(
     ,output [7:0] sel 
     );
     
+    wire finish_G;
     //instantiate SCAN and PRINT
     reg type_rx,req_rx;
     wire flag_rx,ack_rx;
@@ -140,6 +141,7 @@ module DCP(
                         CMD_P: sel_mode <= CMD_P;
                         CMD_T: sel_mode <= CMD_T;
                         CMD_B: sel_mode <= CMD_B;
+                        CMD_G: sel_mode <= CMD_G;
                         default: sel_mode <= FAIL;
                     endcase
                 end
@@ -253,6 +255,29 @@ module DCP(
         .dout_B(dout_B)
     );
 
+    wire req_tx_G, type_tx_G;
+    wire req_rx_G, type_rx_G;
+    wire [31:0] dout_G;
+    //wire finish_G; declared before
+    wire clk_cpu_G;
+    DCP_G(
+        .clk(clk), .rstn(rstn),
+        .sel_mode(sel_mode),
+        .CMD_G(CMD_G),
+        .finish_G(finish_G),
+        .pc_chk(pc_chk),
+        .B_1(B_1), .B_2(B_2),
+        .din_rx(din_rx),
+        .ack_rx(ack_rx), .flag_rx(flag_rx),
+        .req_rx_G(req_rx_G), .type_rx_G(type_rx_G),
+        .IMM(IMM), .pc(pc), .npc(npc), 
+        .IR(IR), .CTL(CTL), .A(A), .B(B), .Y(Y), .MDR(MDR),
+        .ack_tx(ack_tx), .type_tx_G(type_tx_G),
+        .req_tx_G(req_tx_G),
+        .dout_G(dout_G)
+        ,.clk_cpu_G(clk_cpu_G)
+    );
+
     assign sel = {3'b0, cs_P};
     wire finish_R;
     wire [31:0] dout_R;
@@ -287,6 +312,7 @@ module DCP(
                 dout_tx = 32'h0000_0000;
                 addr = 32'h0000_0000;
                 finish = 1;
+                clk_cpu=0;
             end
             CMD_D: begin
                 req_rx = req_rx_D;
@@ -296,6 +322,7 @@ module DCP(
                 dout_tx = dout_D;
                 addr = addr_D;
                 finish = finish_D;
+                clk_cpu=0;
             end
             CMD_I: begin
                 req_rx = req_rx_I;
@@ -305,6 +332,7 @@ module DCP(
                 dout_tx = dout_I;
                 addr = addr_I;
                 finish = finish_I;
+                clk_cpu=0;
             end
             CMD_R: begin
                 req_rx = req_rx_R;
@@ -314,12 +342,14 @@ module DCP(
                 dout_tx = dout_R;
                 addr = addr_R;
                 finish = finish_R;
+                clk_cpu=0;
             end
             CMD_P: begin
                 req_tx = req_tx_P;
                 type_tx = type_tx_P;
                 dout_tx = dout_P;
                 finish = finish_P;
+                clk_cpu=0;
             end
             CMD_T: begin
                 req_tx = req_tx_T;
@@ -335,6 +365,16 @@ module DCP(
                 type_tx = type_tx_B;
                 dout_tx = dout_B;
                 finish = finish_B;
+                clk_cpu=0;
+            end
+            CMD_G: begin
+                req_rx = req_rx_G;
+                type_rx = type_rx_G;
+                req_tx = req_tx_G;
+                type_tx = type_tx_G;
+                dout_tx = dout_G;
+                finish = finish_G;
+                clk_cpu=clk_cpu_G;
             end
             FAIL: begin
                 req_rx = 0;
