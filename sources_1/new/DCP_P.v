@@ -11,7 +11,7 @@ module DCP_P(
     input [31:0] pc, // current pc
     input [31:0] npc, //next pc
     input [31:0] IR, // instruction
-    input [3:0] ctl, // control unit
+    input [31:0] CTL, // control unit
     input [31:0] A, // register A
     input [31:0] B, // register B
     input [31:0] Y, // ALU result
@@ -21,11 +21,13 @@ module DCP_P(
     //input flag_rx,
     input ack_tx,
     //output reg req_rx_P,
-    output type_rx_P,
+
     output reg req_tx_P,
     output reg type_tx_P,
     output reg [31:0] dout_P
+    ,output [4:0] cs 
 );
+
     parameter [4:0]
     INIT = 5'b00000,
     PRINT_NPC = 5'b00001,
@@ -335,6 +337,7 @@ module DCP_P(
                         if (ack_tx) begin
                             count_FINISH <= 0;
                             req_tx_P <= 0;
+                            finish_P <= 1;
                         end
                         else req_tx_P <= 1;
                     end
@@ -374,9 +377,238 @@ module DCP_P(
                 end
             end
             PRINT_NPC_DATA: begin
-                
+                type_tx_P = 1;
+                dout_P = npc;
+                if(~ack_tx) NS = PRINT_NPC_DATA;
+                else NS = PRINT_PC;
             end
+            PRINT_PC: begin //ASCII_PC <= 32'h50433D;//PC=
+                if(count_PC == 0) begin
+                     NS = PRINT_PC;
+                     type_tx_P = 0;
+                     dout_P=32'h50;
+                end
+                else if(count_PC == 1) begin
+                    NS = PRINT_PC;
+                    type_tx_P = 0;
+                    dout_P=32'h43;
+                end
+                else  begin
+                    type_tx_P = 0;
+                    dout_P=32'h3D;
+                    if(ack_tx) begin
+                        NS=PRINT_PC_DATA;
+                    end
+                    else NS = PRINT_PC;
+                end
+            end
+            PRINT_PC_DATA: begin
+                type_tx_P = 1;
+                dout_P = pc;
+                if(~ack_tx) NS = PRINT_PC_DATA;
+                else NS = PRINT_IR;
+            end
+            PRINT_IR: begin //ASCII_IR <= 32'h49523D;//IR=
+                if(count_IR == 0) begin
+                     NS = PRINT_IR;
+                     type_tx_P = 0;
+                     dout_P=32'h49;
+                end
+                else if(count_IR == 1) begin
+                    NS = PRINT_IR;
+                    type_tx_P = 0;
+                    dout_P=32'h52;
+                end
+                else  begin
+                    type_tx_P = 0;
+                    dout_P=32'h3D;
+                    if(ack_tx) begin
+                        NS=PRINT_IR_DATA;
+                    end
+                    else NS = PRINT_IR;
+                end
+            end
+            PRINT_IR_DATA: begin
+                type_tx_P = 1;
+                dout_P = IR;
+                if(~ack_tx) NS = PRINT_IR_DATA;
+                else NS = PRINT_CTL;
+            end
+            PRINT_CTL: begin //ASCII_CTL <= 32'h43544C3D;
+                if(count_CTL == 0) begin
+                     NS = PRINT_CTL;
+                     type_tx_P = 0;
+                     dout_P=32'h43;
+                end
+                else if(count_CTL == 1) begin
+                    NS = PRINT_CTL;
+                    type_tx_P = 0;
+                    dout_P=32'h54;
+                end
+                else if(count_CTL == 2) begin
+                    NS = PRINT_CTL;
+                    type_tx_P = 0;
+                    dout_P=32'h4C;
+                end
+                else  begin
+                    type_tx_P = 0;
+                    dout_P=32'h3D;
+                    if(ack_tx) begin
+                        NS=PRINT_CTL_DATA;
+                    end
+                    else NS = PRINT_CTL;
+                end
+            end
+            PRINT_CTL_DATA: begin
+                type_tx_P = 1;
+                dout_P = CTL;
+                if(~ack_tx) NS = PRINT_CTL_DATA;
+                else NS = PRINT_A;
+            end
+            PRINT_A: begin //ASCII_A <= 32'h413D;//A=
+                if(count_A == 0) begin
+                     NS = PRINT_A;
+                     type_tx_P = 0;
+                     dout_P=32'h41;
+                end
+                else  begin
+                    type_tx_P = 0;
+                    dout_P=32'h3D;
+                    if(ack_tx) begin
+                        NS=PRINT_A_DATA;
+                    end
+                    else NS = PRINT_A;
+                end
+            end
+            PRINT_A_DATA: begin
+                type_tx_P = 1;
+                dout_P = A;
+                if(~ack_tx) NS = PRINT_A_DATA;
+                else NS = PRINT_B;
+            end
+            PRINT_B: begin //ASCII_B <= 32'h423D;//B=
+                if(count_B == 0) begin
+                     NS = PRINT_B;
+                     type_tx_P = 0;
+                     dout_P=32'h42;
+                end
+                else  begin
+                    type_tx_P = 0;
+                    dout_P=32'h3D;
+                    if(ack_tx) begin
+                        NS=PRINT_B_DATA;
+                    end
+                    else NS = PRINT_B;
+                end
+            end
+            PRINT_B_DATA: begin
+                type_tx_P = 1;
+                dout_P = B;
+                if(~ack_tx) NS = PRINT_B_DATA;
+                else NS = PRINT_IMM;
+            end
+            PRINT_IMM: begin //ASCII_IMM <= 32'h494D4D3D;//IMM=
+                if(count_IMM == 0) begin
+                     NS = PRINT_IMM;
+                     type_tx_P = 0;
+                     dout_P=32'h49;
+                end
+                else if(count_IMM == 1) begin
+                    NS = PRINT_IMM;
+                    type_tx_P = 0;
+                    dout_P=32'h4D;
+                end
+                else if(count_IMM == 2) begin
+                    NS = PRINT_IMM;
+                    type_tx_P = 0;
+                    dout_P=32'h4D;
+                end
+                else  begin
+                    type_tx_P = 0;
+                    dout_P=32'h3D;
+                    if(ack_tx) begin
+                        NS=PRINT_IMM_DATA;
+                    end
+                    else NS = PRINT_IMM;
+                end
+            end
+            PRINT_IMM_DATA: begin
+                type_tx_P = 1;
+                dout_P = IMM;
+                if(~ack_tx) NS = PRINT_IMM_DATA;
+                else NS = PRINT_Y;
+            end
+            PRINT_Y: begin //ASCII_Y <= 32'h593D;//Y=
+                if(count_Y == 0) begin
+                     NS = PRINT_Y;
+                     type_tx_P = 0;
+                     dout_P=32'h59;
+                end
+                else  begin
+                    type_tx_P = 0;
+                    dout_P=32'h3D;
+                    if(ack_tx) begin
+                        NS=PRINT_Y_DATA;
+                    end
+                    else NS = PRINT_Y;
+                end
+            end
+            PRINT_Y_DATA: begin
+                type_tx_P = 1;
+                dout_P = Y;
+                if(~ack_tx) NS = PRINT_Y_DATA;
+                else NS = PRINT_MDR;
+            end
+            PRINT_MDR: begin //ASCII_MDR <= 32'h4D44523D;//MDR=
+                if(count_MDR == 0) begin
+                     NS = PRINT_MDR;
+                     type_tx_P = 0;
+                     dout_P=32'h4D;
+                end
+                else if(count_MDR == 1) begin
+                    NS = PRINT_MDR;
+                    type_tx_P = 0;
+                    dout_P=32'h44;
+                end
+                else if(count_MDR == 2) begin
+                    NS = PRINT_MDR;
+                    type_tx_P = 0;
+                    dout_P=32'h52;
+                end
+                else  begin
+                    type_tx_P = 0;
+                    dout_P=32'h3D;
+                    if(ack_tx) begin
+                        NS=PRINT_MDR_DATA;
+                    end
+                    else NS = PRINT_MDR;
+                end
+            end
+            PRINT_MDR_DATA: begin
+                type_tx_P = 1;
+                dout_P = MDR;
+                if(~ack_tx) NS = PRINT_MDR_DATA;
+                else NS = FINISH;
+            end
+            FINISH: begin
+                if (count_FINISH == 0) begin
+                    type_tx_P = 0;
+                    dout_P = 32'h0d;
+                    NS = FINISH;
+                end
+                else begin
+                    type_tx_P = 0;
+                    dout_P = 32'h0a;
+                    if (ack_tx) begin
+                        NS = INIT;
+                        
+                    end
+                    else NS = FINISH;
+                end
+            end
+
 
             endcase
     end
+    assign cs=CS;
 endmodule

@@ -35,6 +35,7 @@ module SDU_test_wyl(
     wire [31:0] npc;
     wire [31:0] pc;
     wire [31:0] IR;
+    wire [31:0] CTL;
     wire [31:0] A;
     wire [31:0] B;
     wire [31:0] Y;
@@ -55,6 +56,7 @@ module SDU_test_wyl(
         .npc(npc),
         .pc(pc),
         .IR(IR),
+        .CTL(CTL),
         .A(A),
         .B(B),
         .Y(Y),
@@ -78,6 +80,7 @@ module SDU_test_wyl(
         .npc(npc),
         .pc(pc),
         .IR(IR),
+        .CTL(CTL),
         .A(A),
         .B(B),
         .Y(Y),
