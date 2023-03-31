@@ -110,6 +110,7 @@ module DCP_T(
             count_MDR<=0;
             //req_rx_P<=0;
             req_tx_T<=0;
+            clk_cpu <=0;
         end
         else begin 
             CS<=NS;
@@ -136,6 +137,7 @@ module DCP_T(
                     clk_cpu <=0;
                 end
                 PRINT_NPC: begin
+                    clk_cpu <=0;
                     if(count_NPC < 3) begin
                         if(ack_tx) begin
                             count_NPC <=count_NPC + 1;
@@ -152,12 +154,14 @@ module DCP_T(
                     end
                 end
                 PRINT_NPC_DATA: begin
+                    clk_cpu <=0;
                     if(ack_tx) begin
                         req_tx_T <= 0;
                     end
                     else req_tx_T <= 1;
                 end
                 PRINT_PC: begin
+                    clk_cpu <=0;
                     if(count_PC < 2) begin
                         if(ack_tx) begin
                             count_PC <=count_PC + 1;
@@ -174,12 +178,14 @@ module DCP_T(
                     end
                 end
                 PRINT_PC_DATA: begin
+                    clk_cpu <=0;
                     if(ack_tx) begin
                         req_tx_T <= 0;
                     end
                     else req_tx_T <= 1;
                 end
                 PRINT_IR: begin
+                    clk_cpu <=0;
                     if(count_IR < 2) begin
                         if(ack_tx) begin
                             count_IR <=count_IR + 1;
@@ -196,12 +202,14 @@ module DCP_T(
                     end
                 end
                 PRINT_IR_DATA: begin
+                    clk_cpu <=0;
                     if(ack_tx) begin
                         req_tx_T <= 0;
                     end
                     else req_tx_T <= 1;
                 end
                 PRINT_CTL: begin
+                    clk_cpu <=0;
                     if(count_CTL < 3) begin
                         if(ack_tx) begin
                             count_CTL <=count_CTL + 1;
@@ -218,12 +226,14 @@ module DCP_T(
                     end
                 end
                 PRINT_CTL_DATA: begin
+                    clk_cpu <=0;
                     if(ack_tx) begin
                         req_tx_T <= 0;
                     end
                     else req_tx_T <= 1;
                 end
                 PRINT_A: begin
+                    clk_cpu <=0;
                     if(count_A < 1) begin
                         if(ack_tx) begin
                             count_A <=count_A + 1;
@@ -240,12 +250,14 @@ module DCP_T(
                     end
                 end
                 PRINT_A_DATA: begin
+                    clk_cpu <=0;
                     if(ack_tx) begin
                         req_tx_T <= 0;
                     end
                     else req_tx_T <= 1;
                 end
                 PRINT_B: begin
+                    clk_cpu <=0;
                     if(count_B < 1) begin
                         if(ack_tx) begin
                             count_B <=count_B + 1;
@@ -262,12 +274,14 @@ module DCP_T(
                     end
                 end
                 PRINT_B_DATA: begin
+                    clk_cpu <=0;
                     if(ack_tx) begin
                         req_tx_T <= 0;
                     end
                     else req_tx_T <= 1;
                 end
                 PRINT_IMM: begin
+                    clk_cpu <=0;
                     if(count_IMM < 3) begin
                         if(ack_tx) begin
                             count_IMM <=count_IMM + 1;
@@ -284,12 +298,14 @@ module DCP_T(
                     end
                 end
                 PRINT_IMM_DATA: begin
+                    clk_cpu <=0;
                     if(ack_tx) begin
                         req_tx_T <= 0;
                     end
                     else req_tx_T <= 1;
                 end
                 PRINT_Y: begin
+                    clk_cpu <=0;
                     if(count_Y < 1) begin
                         if(ack_tx) begin
                             count_Y <=count_Y + 1;
@@ -306,12 +322,14 @@ module DCP_T(
                     end
                 end
                 PRINT_Y_DATA: begin
+                    clk_cpu <=0;
                     if(ack_tx) begin
                         req_tx_T <= 0;
                     end
                     else req_tx_T <= 1;
                 end
                 PRINT_MDR: begin
+                    clk_cpu <=0;
                     if(count_MDR < 3) begin
                         if(ack_tx) begin
                             count_MDR <=count_MDR + 1;
@@ -328,12 +346,14 @@ module DCP_T(
                     end
                 end
                 PRINT_MDR_DATA: begin
+                    clk_cpu <=0;
                     if(ack_tx) begin
                         req_tx_T <= 0;
                     end
                     else req_tx_T <= 1;
                 end
                 FINISH: begin
+                    clk_cpu <=0;
                     if(count_FINISH == 0) begin
                         if(ack_tx) begin
                             count_FINISH <= 1;

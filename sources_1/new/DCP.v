@@ -28,9 +28,6 @@ module DCP(
     output reg we_dm,
     output reg we_im,
     output reg clk_ld
-    //test
-    ,output [7:0] cs
-    ,output [7:0] sel 
     );
     
     wire finish_G;
@@ -279,7 +276,6 @@ module DCP(
         ,.clk_cpu_G(clk_cpu_G)
     );
 
-    assign sel = {3'b0, cs_P};
     wire finish_R;
     wire [31:0] dout_R;
     wire [31:0] addr_R;

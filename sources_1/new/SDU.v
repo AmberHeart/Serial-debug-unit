@@ -25,9 +25,6 @@ module SDU(
     output we_dm,
     output we_im,
     output clk_ld
-    //test
-    ,output [7:0] cs
-    ,output [7:0] sel
 );
     assign we_dm =0;
     assign we_im =0;
@@ -80,8 +77,5 @@ module SDU(
         .we_dm(we_dm),
         .we_im(we_im),
         .clk_ld(clk_ld)
-        //test
-        ,.cs(cs)
-        ,.sel(sel)
         );
 endmodule
