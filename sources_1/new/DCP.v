@@ -381,6 +381,7 @@ module DCP(
                 dout_tx = 32'h0000_0000;
                 addr = 32'h0000_0000;
                 finish = 1;
+                clk_cpu = 0;
             end
             default: begin
                 req_rx = 0;
@@ -390,6 +391,7 @@ module DCP(
                 dout_tx = 32'h0000_0000;
                 addr = 32'h0000_0000;
                 finish = 0;
+                clk_cpu = 0;
             end
         endcase
     end
