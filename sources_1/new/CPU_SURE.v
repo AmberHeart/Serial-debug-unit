@@ -74,7 +74,6 @@ module CPU_test(
 
 
 reg [7:0] dpra_dm;
-reg [7:0] dpra_dm_in;
 reg [31:0] d_dm;
 reg [31:0] d_dm_in;
 wire [31:0] dpo_dm;
@@ -88,7 +87,7 @@ assign a_dm_in = (debug? a_dm_in_2 : a_dm_in_1);
 DM your_dm (
   .a(a_dm_in),        // input wire [7 : 0] a
   .d(d_dm_in),        // input wire [31 : 0] d
-  .dpra(dpra_dm_in),  // input wire [7 : 0] dpra
+  .dpra(dpra_dm),  // input wire [7 : 0] dpra
   .clk(clk_ld),    // input wire clk
   .we(we_dm_in),      // input wire we
   .spo(spo_dm),    // output wire [31 : 0] spo
@@ -115,7 +114,6 @@ IM your_im (
             we_rf <= 0;
             wa_in <= 0;
             d_dm_in <= 0;
-            dpra_dm_in <= 0;
             we_dm_in <= 0;
             a_dm_in_1 <= 0;
         end
@@ -167,7 +165,6 @@ IM your_im (
                         wd<=Y_reg;
                         we_rf<=1;
                         wa_in <= wa;
-                        dpra_dm_in <= dpra_dm;
                     end
                     32'h3: begin //auipc
                         wd<=Y_reg;
@@ -193,26 +190,38 @@ IM your_im (
             7'b0110011:begin //add sub 
                 case (IR[30])
                     0: begin //add
-                        ra0 = IR_reg[19:15];
-                        ra1 = IR_reg[24:20];
+                        
+                        IMM_reg = 0;
+                        jump=0;
                         A_reg = rd0;
                         B_reg = rd1;
                         Y_reg = A_reg + B_reg;
-                        IMM_reg = 0;
-                        wa=IR_reg[11:7];
-                        CTL_reg = 32'h0000_0001;
-                        jump=0;
-                    end
-                    1: begin //sub
+                        a_im_in = 0;
                         ra0 = IR_reg[19:15];
                         ra1 = IR_reg[24:20];
+                        wa=IR_reg[11:7];
+                        a_dm = 0;
+                        d_dm = 0;
+                        dpra_dm = 0;
+                        CTL_reg = 32'h0000_0001;
+                        a_dm_in_2 = 0;
+                    end
+                    1: begin //sub
+                        
+                        IMM_reg = 0;
+                        jump=0;
                         A_reg = rd0;
                         B_reg = rd1;
                         Y_reg = A_reg - B_reg;
-                        IMM_reg = 0;
+                        a_im_in = 0;
+                        ra0 = IR_reg[19:15];
+                        ra1 = IR_reg[24:20];
                         wa=IR_reg[11:7];
+                        a_dm = 0;
+                        d_dm = 0;
+                        dpra_dm = 0;
                         CTL_reg = 32'h0000_0002;
-                        jump=0;
+                        a_dm_in_2 = 0;
                     end
                     endcase
                     
@@ -220,114 +229,194 @@ IM your_im (
             7'b0010011: begin //addi slli
                 case (IR[14:12])
                     3'b000: begin //addi
-                        ra0 = IR_reg[19:15];
-                        A_reg = rd0;
-                        B_reg = 0;
                         IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                             IR_reg[31:20]};
-                        Y_reg = A_reg + IMM_reg;
-                        wa=IR_reg[11:7];
-                        CTL_reg = 32'h0000_000a;
                         jump=0;
-                    end
-                    3'b001: begin //slli
-                        ra0 = IR_reg[19:15];
                         A_reg = rd0;
                         B_reg = 0;
-                        IMM_reg = {27'h0,IR_reg[24:20]};
-                        Y_reg = A_reg << IMM_reg;
+                        Y_reg = A_reg + IMM_reg;
+                        a_im_in = 0;
+                        ra0 = IR_reg[19:15];
+                        ra1 = 0;
                         wa=IR_reg[11:7];
-                        CTL_reg = 32'h0000_0009;
+                        a_dm = 0;
+                        d_dm = 0;
+                        dpra_dm = 0;
+                        CTL_reg = 32'h0000_000a;
+                        a_dm_in_2 = 0;
+                    end
+                    3'b001: begin //slli
+                        IMM_reg = {27'h0,IR_reg[24:20]};
                         jump=0;
+                        A_reg = rd0;
+                        B_reg = 0;
+                        Y_reg = A_reg << IMM_reg;
+                        a_im_in = 0;
+                        ra0 = IR_reg[19:15];
+                        ra1 = 0;
+                        wa=IR_reg[11:7];
+                        a_dm = 0;
+                        d_dm = 0;
+                        dpra_dm = 0;
+                        CTL_reg = 32'h0000_0009;
+                        a_dm_in_2 = 0;
+                    end
+                    default: begin
+                        IMM_reg = 0;
+                        jump = 0;
+                        A_reg = 32'h0000_0000;
+                        B_reg = 32'h0000_0000;
+                        Y_reg = 0;
+                        a_im_in = 0;
+                        ra0 = 0;
+                        ra1 = 0;
+                        wa = 0;
+                        a_dm = 0;
+                        d_dm = 0;
+                        dpra_dm = 0;
+                        CTL_reg = 32'h0000_0000;//JUMP TO ITSELF
+                        a_dm_in_2 = 0;
                     end
                     endcase
             end
             
 
             7'b0000011: begin // lw
-                wa = IR_reg[11:7];
-                ra0 = IR_reg[19:15];
-                A_reg = rd0;
                 IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                             IR_reg[31:20]};
-                B_reg = 0;
-                dpra_dm = A_reg[9:2] + IMM_reg[9:2];
-                Y_reg = dpo_dm;
-                wa = IR_reg[11:7];
-                CTL_reg = 32'h0000_0004;
                 jump=0;
+                A_reg = rd0;
+                B_reg = 0;
+                Y_reg = dpo_dm;
+                a_im_in = 0;
+                ra0 = IR_reg[19:15];
+                ra1 = 0;
+                wa = IR_reg[11:7];
+                a_dm = 0;
+                d_dm = 0;
+                dpra_dm = A_reg[9:2] + IMM_reg[9:2];
+                CTL_reg = 32'h0000_0004;
+                a_dm_in_2 = 0;
             end
             7'b0010111: begin // auipc
                 IMM_reg = {IR_reg[31:12],12'h0};
-                Y_reg = pc_reg + IMM_reg;
-                wa = IR_reg[11:7];
+                jump=0;
                 A_reg = 0;
                 B_reg = 0;
+                Y_reg = pc_reg + IMM_reg;
+                a_im_in = 0;
+                ra0 = 0;
+                ra1 = 0;
+                wa = IR_reg[11:7];
+                a_dm = 0;
+                d_dm = 0;
+                dpra_dm = 0;
                 CTL_reg = 32'h0000_0003;
-                jump=0;
+                a_dm_in_2 = 0;
             end
             7'b1101111: begin // jal
-                Y_reg = pc_reg + 4;
-                wa = IR_reg[11:7];
-                A_reg = 0;
-                B_reg = 0;
                 IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31], IR_reg[31],
                         IR_reg[31] , IR_reg[19:12], IR_reg[20], IR_reg[30:21]};
-                CTL_reg = 32'h0000_0008;
                 jump=0;
+                A_reg = 0;
+                B_reg = 0;
+                Y_reg = pc_reg + 4;
+                a_im_in = 0;
+                ra0 = 0;
+                ra1 = 0;
+                wa = IR_reg[11:7];
+                a_dm = 0;
+                d_dm = 0;
+                dpra_dm = 0;
+                CTL_reg = 32'h0000_0008;
+                a_dm_in_2 = 0;
             end
             7'b0100011: begin // sw
-                ra0 = IR_reg[19:15];
-                ra1 = IR_reg[24:20];
-                A_reg = rd0;
-                B_reg = rd1;
                 IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                             IR_reg[31:25],IR_reg[11:7]};
+                jump=0;
+                A_reg = rd0;
+                B_reg = rd1;
+                Y_reg = 0;
+                a_im_in = 0;
+                ra0 = IR_reg[19:15];
+                ra1 = IR_reg[24:20];
+                wa = 0;
                 a_dm = A_reg[9:2] + IMM_reg[9:2];
                 d_dm = B_reg;
+                dpra_dm = 0;
                 CTL_reg = 32'h0000_0005;
-                jump=0;
-                
+                a_dm_in_2 = 0;
             end
             7'b1100011: begin // beq bltu
                 case (IR[14:12])
                     3'b000: begin //beq
-                        CTL_reg = 32'h0000_0006;
-                        ra0 = IR_reg[19:15];
-                        ra1 = IR_reg[24:20];
-                        A_reg = rd0;
-                        B_reg = rd1;
+                        IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31], IMM_reg[31],
+                        IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
+                        IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
+                        IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
+                        IR_reg[7] , IR_reg[30:25],IR_reg[11:8],1'b0};
                         if(A_reg == B_reg) jump=1;
                         else jump=0;
-                        IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31], IMM_reg[31],
-                        IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
-                        IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
-                        IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
-                        IR_reg[7] , IR_reg[30:25],IR_reg[11:8],1'b0};
-                    end
-                    3'b110: begin //bltu
-                        CTL_reg = 32'h0000_0007;
-                        ra0 = IR_reg[19:15];
-                        ra1 = IR_reg[24:20];
                         A_reg = rd0;
                         B_reg = rd1;
-                        if(A_reg < B_reg) jump=1;
-                        else jump=0;
+                        Y_reg = 0;
+                        a_im_in = 0;
+                        ra0 = IR_reg[19:15];
+                        ra1 = IR_reg[24:20];
+                        wa = 0;
+                        a_dm = 0;
+                        d_dm = 0;
+                        dpra_dm = 0;
+                        CTL_reg = 32'h0000_0006;
+                        a_dm_in_2 = 0;
+                    end
+                    3'b110: begin //bltu
                         IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31], IMM_reg[31],
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                         IR_reg[7] , IR_reg[30:25],IR_reg[11:8],1'b0};
+                        if(A_reg < B_reg) jump=1;
+                        else jump=0;
+                        A_reg = rd0;
+                        B_reg = rd1;
+                        Y_reg = 0;
+                        a_im_in = 0;
+                        ra0 = IR_reg[19:15];
+                        ra1 = IR_reg[24:20];
+                        wa = 0;
+                        a_dm = 0;
+                        d_dm = 0;
+                        dpra_dm = 0;
+                        CTL_reg = 32'h0000_0007;
+                        a_dm_in_2 = 0;
+                    end
+                    default: begin
+                        IMM_reg = 0;
+                        jump = 0;
+                        A_reg = 32'h0000_0000;
+                        B_reg = 32'h0000_0000;
+                        Y_reg = 0;
+                        a_im_in = 0;
+                        ra0 = 0;
+                        ra1 = 0;
+                        wa = 0;
+                        a_dm = 0;
+                        d_dm = 0;
+                        dpra_dm = 0;
+                        CTL_reg = 32'h0000_0000;//JUMP TO ITSELF
+                        a_dm_in_2 = 0;
                     end
                     endcase
             
@@ -335,21 +424,41 @@ IM your_im (
 
 
             default: begin
+                IMM_reg = 0;
+                jump = 0;
                 A_reg = 32'h0000_0000;
                 B_reg = 32'h0000_0000;
-                IMM_reg = 32'h0000_0000;
+                Y_reg = 0;
+                a_im_in = 0;
+                ra0 = 0;
+                ra1 = 0;
+                wa = 0;
+                a_dm = 0;
+                d_dm = 0;
+                dpra_dm = 0;
                 CTL_reg = 32'h0000_0000;//JUMP TO ITSELF
+                a_dm_in_2 = 0;
             end
         endcase
     end
     else begin
-        ra0 = addr[4:0];
-        dout_rf = rd0;
+        IMM_reg = 0;
+        jump = 0;
+        A_reg = 0;
+        B_reg = 0;
+        Y_reg = 0;
         a_im_in = addr[7:0];
+        ra0 = addr[4:0];
+        ra1 = 0;
+        wa = 0;
+        a_dm = 0;
+        d_dm = 0;
+        dout_rf = rd0;
         dout_im = spo_im;
         a_dm_in_2 = addr[7:0];
         dout_dm = spo_dm;
-
+        dpra_dm = 0;
+        CTL_reg = 32'h0000_0000;//JUMP TO ITSELF
 
     end
     end
