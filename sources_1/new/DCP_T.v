@@ -30,6 +30,7 @@ module DCP_T(
 
     parameter [4:0]
     INIT = 5'b00000,
+    CLK_RST = 5'b10110,
     CLK_ON = 5'b10100,
     CLK_OFF = 5'b10101,
     PRINT_NPC = 5'b00001,
@@ -128,6 +129,9 @@ module DCP_T(
                     //req_rx_P<=0;
                     count_FINISH <=0;
                     clk_cpu <=0;
+                end
+                CLK_RST:begin
+                    clk_cpu <= 0;
                 end
                 CLK_ON: begin
                     clk_cpu <=1;
@@ -392,7 +396,10 @@ module DCP_T(
         if(~we) NS =INIT;
         else case (CS)
             INIT: begin
-                if(we) NS = CLK_ON;
+                if(we) NS = CLK_RST;
+            end
+            CLK_RST: begin
+                NS = CLK_ON;
             end
             CLK_ON: begin
                 NS = CLK_OFF;

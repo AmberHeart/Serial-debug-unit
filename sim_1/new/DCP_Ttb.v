@@ -13,6 +13,7 @@ module DCP_Ttb(
     reg [31:0] B;
     reg [31:0] Y;
     reg [31:0] MDR;
+    reg ack_tx;
     wire clk_cpu;
     DCP_T DCP_TTB(
         .clk(clk),
@@ -46,15 +47,48 @@ initial begin
         B=32'h00000007;
         Y=32'h00000008;
         MDR=32'h00000009;
-        #2 rstn = 1;
-        #2 rstn =0;
-        #2 rstn = 1;
+        #1 rstn = 0;
+        #1 rstn = 1;
+        #10 ack_tx = 1;
+        #10 ack_tx = 0;
+        
+        #10 ack_tx = 1;
+        #10 ack_tx = 0;
+        
+        #10 ack_tx = 1;
+        #10 ack_tx = 0;
+        
+        #10 ack_tx = 1;
+        #10 ack_tx = 0;
+        
+        #10 ack_tx = 1;
+        #10 ack_tx = 0;
+        
+        #10 ack_tx = 1;
+        #10 ack_tx = 0;
+        
+        #10 ack_tx = 1;
+        #10 ack_tx = 0;
+        #10 ack_tx = 1;
+        #10 ack_tx = 0;
+        #10 ack_tx = 1;
+        #10 ack_tx = 0;
+        #10 ack_tx = 1;
+        #10 ack_tx = 0;
+        #10 ack_tx = 1;
+        #10 ack_tx = 0;
+        #10 ack_tx = 1;
+        #10 ack_tx = 0;
+        #10 ack_tx = 1;
+        #10 ack_tx = 0;
 
 
     end
-always@(*)
-begin
-    #1 clk = ~clk;
+always @(*) begin
+    forever begin
+        #1;
+        clk=~clk;
+    end
 end
     
 endmodule
