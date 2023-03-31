@@ -10,6 +10,7 @@ module SDU(
     input [31:0] npc,
     input [31:0] pc,
     input [31:0] IR,
+    input [31:0] IMM,
     input [31:0] CTL,    
     input [31:0] A,
     input [31:0] B,
@@ -27,6 +28,7 @@ module SDU(
     //test
     ,output [7:0] cs
     ,output [7:0] sel
+    ,output debug
 );
     assign we_dm =0;
     assign we_im =0;
@@ -65,6 +67,7 @@ module SDU(
         .npc(npc),
         .pc(pc),
         .IR(IR),
+        .IMM(IMM),
         .A(A),
         .B(B),
         .Y(Y),
@@ -80,5 +83,6 @@ module SDU(
         //test
         ,.cs(cs)
         ,.sel(sel)
+        ,.debug(debug)
         );
 endmodule

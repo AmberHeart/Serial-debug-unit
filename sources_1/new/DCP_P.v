@@ -342,6 +342,21 @@ module DCP_P(
                         else req_tx_P <= 1;
                     end
                 end
+                default begin
+                    CS<=INIT;
+                    finish_P<=0;
+                    count_NPC<=0;
+                    count_PC<=0;
+                    count_IR<=0;
+                    count_CTL<=0;
+                    count_A<=0;
+                    count_B<=0;
+                    count_IMM<=0;
+                    count_Y<=0;
+                    count_MDR<=0;
+                    //req_rx_P<=0;
+                    req_tx_P<=0;
+                end
             endcase
         end
     end

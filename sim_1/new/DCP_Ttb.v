@@ -1,4 +1,4 @@
-module DCP_Ptb(
+module DCP_Ttb(
 
 );
     reg clk=0;
@@ -13,12 +13,13 @@ module DCP_Ptb(
     reg [31:0] B;
     reg [31:0] Y;
     reg [31:0] MDR;
-    DCP_P DCP_PTB(
+    wire clk_cpu;
+    DCP_T DCP_TTB(
         .clk(clk),
         .rstn(rstn),
-        .sel_mode(8'h50),
-        .CMD_P(8'h50),
-        .finish_P(finish),
+        .sel_mode(8'h54),
+        .CMD_T(8'h54),
+        .finish_T(finish),
         .IMM(IMM),
         .pc(pc),
         .npc(npc),
@@ -29,9 +30,10 @@ module DCP_Ptb(
         .Y(Y),
         .MDR(MDR),
         .ack_tx(ack_tx),
-        .req_tx_P(req_tx_P),
-        .type_tx_P(type_tx_P),
-        .dout_P(dout_P)
+        .req_tx_T(req_tx_T),
+        .type_tx_T(type_tx_T),
+        .dout_T(dout_T),
+        .clk_cpu(clk_cpu)
     );
 initial begin
         rstn =1;
@@ -44,8 +46,9 @@ initial begin
         B=32'h00000007;
         Y=32'h00000008;
         MDR=32'h00000009;
-
+        #2 rstn = 1;
         #2 rstn =0;
+        #2 rstn = 1;
 
 
     end

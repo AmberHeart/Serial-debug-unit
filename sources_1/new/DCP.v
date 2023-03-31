@@ -14,6 +14,7 @@ module DCP(
     input [31:0] npc,
     input [31:0] pc,
     input [31:0] IR,
+    input [31:0] IMM,
     input [31:0] CTL,
     input [31:0] A,
     input [31:0] B,
@@ -30,6 +31,8 @@ module DCP(
     //test
     ,output [7:0] cs
     ,output [7:0] sel 
+    ,output reg debug
+    
     );
     
     wire finish_G;
@@ -289,10 +292,6 @@ module DCP(
         .sel_mode(sel_mode),
         .CMD_R(CMD_R),
         .finish_R(finish_R),
-        .din_rx(din_rx),
-        .req_rx_R(req_rx_R), .type_rx_R(type_rx_R),
-        .flag_rx(flag_rx),
-        .ack_rx(ack_rx),
         .req_tx_R(req_tx_R), .type_tx_R(type_tx_R),
         .ack_tx(ack_tx),
         .addr_R(addr_R),
@@ -313,6 +312,7 @@ module DCP(
                 addr = 32'h0000_0000;
                 finish = 1;
                 clk_cpu=0;
+                debug = 0;
             end
             CMD_D: begin
                 req_rx = req_rx_D;
@@ -323,6 +323,7 @@ module DCP(
                 addr = addr_D;
                 finish = finish_D;
                 clk_cpu=0;
+                debug = 1;
             end
             CMD_I: begin
                 req_rx = req_rx_I;
@@ -333,16 +334,16 @@ module DCP(
                 addr = addr_I;
                 finish = finish_I;
                 clk_cpu=0;
+                debug = 1;
             end
             CMD_R: begin
-                req_rx = req_rx_R;
-                type_rx = type_rx_R;
                 req_tx = req_tx_R;
                 type_tx = type_tx_R;
                 dout_tx = dout_R;
                 addr = addr_R;
                 finish = finish_R;
                 clk_cpu=0;
+                debug = 1;
             end
             CMD_P: begin
                 req_tx = req_tx_P;
@@ -350,6 +351,7 @@ module DCP(
                 dout_tx = dout_P;
                 finish = finish_P;
                 clk_cpu=0;
+                debug = 0;
             end
             CMD_T: begin
                 req_tx = req_tx_T;
@@ -357,6 +359,7 @@ module DCP(
                 dout_tx = dout_T;
                 finish = finish_T;
                 clk_cpu = clk_cpu_T;
+                debug = 0;
             end
             CMD_B: begin
                 req_rx = req_rx_B;
@@ -366,6 +369,7 @@ module DCP(
                 dout_tx = dout_B;
                 finish = finish_B;
                 clk_cpu=0;
+                debug = 0;
             end
             CMD_G: begin
                 req_rx = req_rx_G;
@@ -375,6 +379,7 @@ module DCP(
                 dout_tx = dout_G;
                 finish = finish_G;
                 clk_cpu=clk_cpu_G;
+                debug = 0;
             end
             FAIL: begin
                 req_rx = 0;
@@ -384,6 +389,8 @@ module DCP(
                 dout_tx = 32'h0000_0000;
                 addr = 32'h0000_0000;
                 finish = 1;
+                debug = 0;
+                clk_cpu=0;
             end
             default: begin
                 req_rx = 0;
@@ -393,6 +400,8 @@ module DCP(
                 dout_tx = 32'h0000_0000;
                 addr = 32'h0000_0000;
                 finish = 0;
+                debug = 0;
+                clk_cpu=0;
             end
         endcase
     end

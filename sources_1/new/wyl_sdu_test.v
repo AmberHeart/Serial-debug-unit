@@ -33,6 +33,7 @@ module SDU_test_wyl(
     wire [31:0] npc;
     wire [31:0] pc;
     wire [31:0] IR;
+    wire [31:0] IMM;
     wire [31:0] CTL;
     wire [31:0] A;
     wire [31:0] B;
@@ -46,6 +47,7 @@ module SDU_test_wyl(
     wire we_dm;
     wire we_im;
     wire clk_ld;
+    wire debug;
     CPU_test test_CPU(
         .clk(clk),
         .rstn(rstn),
@@ -54,6 +56,7 @@ module SDU_test_wyl(
         .npc(npc),
         .pc(pc),
         .IR(IR),
+        .IMM(IMM),
         .CTL(CTL),
         .A(A),
         .B(B),
@@ -66,7 +69,8 @@ module SDU_test_wyl(
         .din(din),
         .we_dm(we_dm),
         .we_im(we_im),
-        .clk_ld(clk)
+        .clk_ld(clk),
+        .debug(debug)
     );
     SDU SDU_wyl(
         .clk(clk),
@@ -78,6 +82,7 @@ module SDU_test_wyl(
         .npc(npc),
         .pc(pc),
         .IR(IR),
+        .IMM(IMM),
         .CTL(CTL),
         .A(A),
         .B(B),
@@ -93,5 +98,6 @@ module SDU_test_wyl(
         .clk_ld(clk_ld)
         ,.cs(scan_w)
         ,.sel(print_w)
+        ,.debug(debug)
     );
 endmodule
