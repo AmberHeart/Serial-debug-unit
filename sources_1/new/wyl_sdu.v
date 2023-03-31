@@ -67,6 +67,7 @@ module SDU(
         .npc(npc),
         .pc(pc),
         .IR(IR),
+        .CTL(CTL),
         .IMM(IMM),
         .A(A),
         .B(B),
