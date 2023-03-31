@@ -23,7 +23,7 @@ module CPU_test(
     input debug
 );
     reg jump=0;
-    reg [31:0] npc_reg;
+    reg [31:0] npc_reg= 32'h0000_3000;
     reg [31:0] pc_reg;
     reg [31:0] IR_reg;
     reg [31:0] CTL_reg;
@@ -109,7 +109,6 @@ IM your_im (
     always@(posedge clk_cpu or negedge rstn)begin
         if(~rstn) begin
             pc_reg <= 32'h0000_3000; //
-            npc_reg <= 32'h0000_3000;
             wd <= 0;
             we_rf <= 0;
             wa_in <= 0;
@@ -119,26 +118,8 @@ IM your_im (
         end
         else 
         begin
-            if(CTL_reg != 6 && CTL_reg != 7 && CTL_reg != 8) begin
-                pc_reg <= npc_reg;
-                npc_reg <= npc_reg + 4;
-            end
-            else if(CTL_reg == 8) begin
-                pc_reg <= pc_reg  + IMM_reg;
-                npc_reg <= pc_reg + 4 + IMM_reg;
-            end
-            else if(CTL_reg == 6 || CTL_reg == 7)
-            begin
-                if(jump) begin
-                pc_reg <= pc_reg  + IMM_reg;
-                npc_reg <= pc_reg + 4 + IMM_reg;
-                end
-                else begin
-                pc_reg <= npc_reg;
-                npc_reg <= npc_reg + 4;
-                end
-            end
-            IR_reg<=dpo_im;
+            pc_reg <= npc_reg;
+            
             
                 case(CTL_reg) 
                     32'h1: begin //add
@@ -186,6 +167,7 @@ IM your_im (
             dout_dm = 32'h0000_0000;
             dout_im = 32'h0000_0000;
             dout_rf = 32'h0000_0000;
+            IR_reg=dpo_im;
         case (IR_reg[6:0])
             7'b0110011:begin //add sub 
                 case (IR[30])
@@ -205,6 +187,7 @@ IM your_im (
                         dpra_dm = 0;
                         CTL_reg = 32'h0000_0001;
                         a_dm_in_2 = 0;
+                        npc_reg=pc_reg+4;
                     end
                     1: begin //sub
                         
@@ -222,6 +205,7 @@ IM your_im (
                         dpra_dm = 0;
                         CTL_reg = 32'h0000_0002;
                         a_dm_in_2 = 0;
+                        npc_reg=pc_reg+4;
                     end
                     endcase
                     
@@ -247,6 +231,7 @@ IM your_im (
                         dpra_dm = 0;
                         CTL_reg = 32'h0000_000a;
                         a_dm_in_2 = 0;
+                        npc_reg=pc_reg+4;
                     end
                     3'b001: begin //slli
                         IMM_reg = {27'h0,IR_reg[24:20]};
@@ -263,6 +248,7 @@ IM your_im (
                         dpra_dm = 0;
                         CTL_reg = 32'h0000_0009;
                         a_dm_in_2 = 0;
+                        npc_reg=pc_reg+4;
                     end
                     default: begin
                         IMM_reg = 0;
@@ -279,6 +265,7 @@ IM your_im (
                         dpra_dm = 0;
                         CTL_reg = 32'h0000_0000;//JUMP TO ITSELF
                         a_dm_in_2 = 0;
+                        npc_reg=pc_reg+4;
                     end
                     endcase
             end
@@ -303,6 +290,7 @@ IM your_im (
                 dpra_dm = A_reg[9:2] + IMM_reg[9:2];
                 CTL_reg = 32'h0000_0004;
                 a_dm_in_2 = 0;
+                npc_reg=pc_reg+4;
             end
             7'b0010111: begin // auipc
                 IMM_reg = {IR_reg[31:12],12'h0};
@@ -319,6 +307,7 @@ IM your_im (
                 dpra_dm = 0;
                 CTL_reg = 32'h0000_0003;
                 a_dm_in_2 = 0;
+                npc_reg=pc_reg+4;
             end
             7'b1101111: begin // jal
                 IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
@@ -337,6 +326,7 @@ IM your_im (
                 dpra_dm = 0;
                 CTL_reg = 32'h0000_0008;
                 a_dm_in_2 = 0;
+                npc_reg=pc_reg+IMM_reg;
             end
             7'b0100011: begin // sw
                 IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
@@ -357,6 +347,7 @@ IM your_im (
                 dpra_dm = 0;
                 CTL_reg = 32'h0000_0005;
                 a_dm_in_2 = 0;
+                npc_reg=pc_reg+4;
             end
             7'b1100011: begin // beq bltu
                 case (IR[14:12])
@@ -366,10 +357,17 @@ IM your_im (
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                         IR_reg[7] , IR_reg[30:25],IR_reg[11:8],1'b0};
-                        if(A_reg == B_reg) jump=1;
-                        else jump=0;
+                        
                         A_reg = rd0;
                         B_reg = rd1;
+                        if(A_reg == B_reg) begin
+                            jump=1;
+                            npc_reg=pc_reg+IMM_reg;
+                        end
+                        else begin
+                            jump=0;
+                            npc_reg = pc_reg+4;
+                        end
                         Y_reg = 0;
                         a_im_in = 0;
                         ra0 = IR_reg[19:15];
@@ -387,11 +385,18 @@ IM your_im (
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                         IR_reg[7] , IR_reg[30:25],IR_reg[11:8],1'b0};
-                        if(A_reg < B_reg) jump=1;
-                        else jump=0;
+                        
                         A_reg = rd0;
                         B_reg = rd1;
                         Y_reg = 0;
+                        if(A_reg < B_reg) begin
+                            jump=1;
+                            npc_reg = pc_reg + IMM_reg;
+                        end
+                        else begin
+                            jump=0;
+                            npc_reg = pc_reg+4;
+                        end
                         a_im_in = 0;
                         ra0 = IR_reg[19:15];
                         ra1 = IR_reg[24:20];
@@ -401,6 +406,7 @@ IM your_im (
                         dpra_dm = 0;
                         CTL_reg = 32'h0000_0007;
                         a_dm_in_2 = 0;
+                        npc_reg=pc_reg+4;
                     end
                     default: begin
                         IMM_reg = 0;
@@ -417,6 +423,7 @@ IM your_im (
                         dpra_dm = 0;
                         CTL_reg = 32'h0000_0000;//JUMP TO ITSELF
                         a_dm_in_2 = 0;
+                        npc_reg=pc_reg+4;
                     end
                     endcase
             
@@ -438,10 +445,12 @@ IM your_im (
                 dpra_dm = 0;
                 CTL_reg = 32'h0000_0000;//JUMP TO ITSELF
                 a_dm_in_2 = 0;
+                npc_reg=pc_reg+4;
             end
         endcase
     end
     else begin
+        IR_reg=0;
         IMM_reg = 0;
         jump = 0;
         A_reg = 0;
@@ -459,7 +468,7 @@ IM your_im (
         dout_dm = spo_dm;
         dpra_dm = 0;
         CTL_reg = 32'h0000_0000;//JUMP TO ITSELF
-
+        npc_reg=pc_reg+4;
     end
     end
     
