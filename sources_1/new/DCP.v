@@ -18,6 +18,7 @@ module DCP(
     input [31:0] A,
     input [31:0] B,
     input [31:0] Y,
+    input [31:0] IMM,
     input [31:0] MDR,
     output reg [31:0] addr, //for CPU
     input [31:0] dout_rf,
