@@ -117,10 +117,7 @@ IM your_im (
             wd <= 0;
             we_rf <= 0;
             wa_in <= 0;
-            d_dm_in <= 0;
-            we_dm_in_1 <= 0;
             we_dm_in_2 <=0;
-            a_dm_in_1 <= 0;
         end
         else 
         begin
@@ -132,44 +129,36 @@ IM your_im (
                         wd<=Y_reg;
                         we_rf<=1;
                         wa_in <= wa;
-                        we_dm_in_1 <= 0;
 
                     end
                     32'h2: begin //sub
                         wd<=Y_reg;
                         we_rf<=1;
                         wa_in <= wa;
-                        we_dm_in_1 <= 0;
                     end
                     32'ha: begin //addi
                         wd<=Y_reg;
                         we_rf<=1;
                         wa_in <= wa;
-                        we_dm_in_1 <= 0;
                     end
                     32'h9: begin //slli
                         wd<=Y_reg;
                         we_rf<=1;
                         wa_in <= wa;
-                        we_dm_in_1 <= 0;
                     end
                     32'h4: begin //lw
                         wd<=Y_reg;
                         we_rf<=1;
                         wa_in <= wa;
-                        we_dm_in_1 <= 0;
                     end
                     32'h3: begin //auipc
                         wd<=Y_reg;
                         we_rf<=1;
                         wa_in <= wa;
-                        we_dm_in_1 <= 0;
-                    end
-                    32'h5: begin //sw
-                        d_dm_in <= d_dm;
-                        we_dm_in_1 <= 1;
-                        a_dm_in_1 <= a_dm;
-                    end
+                     end
+                    // 32'h5: begin //sw
+                    //     a_dm_in_1 <= a_dm;
+                    // end
 
 
                 endcase
@@ -201,6 +190,9 @@ IM your_im (
                         CTL_reg = 32'h0000_0001;
                         a_dm_in_2 = 0;
                         npc_reg=pc_reg+4;
+                        we_dm_in_1 = 0;
+                        d_dm_in = 0;
+                        a_dm_in_1 = 0;
                     end
                     1: begin //sub
                         
@@ -219,6 +211,9 @@ IM your_im (
                         CTL_reg = 32'h0000_0002;
                         a_dm_in_2 = 0;
                         npc_reg=pc_reg+4;
+                        we_dm_in_1 = 0;
+                        d_dm_in = 0;
+                        a_dm_in_1 = 0;
                     end
                     endcase
                     
@@ -245,6 +240,9 @@ IM your_im (
                         CTL_reg = 32'h0000_000a;
                         a_dm_in_2 = 0;
                         npc_reg=pc_reg+4;
+                        we_dm_in_1 = 0;
+                        d_dm_in = 0;
+                        a_dm_in_1 = 0;
                     end
                     3'b001: begin //slli
                         IMM_reg = {27'h0,IR_reg[24:20]};
@@ -262,6 +260,9 @@ IM your_im (
                         CTL_reg = 32'h0000_0009;
                         a_dm_in_2 = 0;
                         npc_reg=pc_reg+4;
+                        we_dm_in_1 = 0;
+                        d_dm_in = 0;
+                        a_dm_in_1 = 0;
                     end
                     default: begin
                         IMM_reg = 0;
@@ -279,6 +280,9 @@ IM your_im (
                         CTL_reg = 32'h0000_0000;//JUMP TO ITSELF
                         a_dm_in_2 = 0;
                         npc_reg=pc_reg+4;
+                        we_dm_in_1 = 0;
+                        d_dm_in = 0;
+                        a_dm_in_1 = 0;
                     end
                     endcase
             end
@@ -304,6 +308,9 @@ IM your_im (
                 CTL_reg = 32'h0000_0004;
                 a_dm_in_2 = 0;
                 npc_reg=pc_reg+4;
+                we_dm_in_1 = 0;
+                d_dm_in = 0;
+                a_dm_in_1 = 0;
             end
             7'b0010111: begin // auipc
                 IMM_reg = {IR_reg[31:12],12'h0};
@@ -321,6 +328,9 @@ IM your_im (
                 CTL_reg = 32'h0000_0003;
                 a_dm_in_2 = 0;
                 npc_reg=pc_reg+4;
+                we_dm_in_1 = 0;
+                d_dm_in = 0;
+                a_dm_in_1 = 0;
             end
             7'b1101111: begin // jal
                 IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
@@ -340,6 +350,9 @@ IM your_im (
                 CTL_reg = 32'h0000_0008;
                 a_dm_in_2 = 0;
                 npc_reg=pc_reg+IMM_reg;
+                we_dm_in_1 = 0;
+                d_dm_in = 0;
+                a_dm_in_1 = 0;
             end
             7'b0100011: begin // sw
                 IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
@@ -361,8 +374,12 @@ IM your_im (
                 CTL_reg = 32'h0000_0005;
                 a_dm_in_2 = 0;
                 npc_reg=pc_reg+4;
+                we_dm_in_1 = 1;
+                d_dm_in = d_dm;
+                a_dm_in_1 = a_dm;
             end
             7'b1100011: begin // beq bltu
+                a_dm_in_1 = 0;
                 case (IR[14:12])
                     3'b000: begin //beq
                         IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31], IR_reg[31],
@@ -391,6 +408,9 @@ IM your_im (
                         dpra_dm = 0;
                         CTL_reg = 32'h0000_0006;
                         a_dm_in_2 = 0;
+                        we_dm_in_1 = 0;
+                        d_dm_in = 0;
+                        
                     end
                     3'b110: begin //bltu
                         IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31], IR_reg[31],
@@ -419,6 +439,8 @@ IM your_im (
                         dpra_dm = 0;
                         CTL_reg = 32'h0000_0007;
                         a_dm_in_2 = 0;
+                        we_dm_in_1 = 0;
+                        d_dm_in = 0;
                     end
                     default: begin
                         IMM_reg = 0;
@@ -436,6 +458,8 @@ IM your_im (
                         CTL_reg = 32'h0000_0000;//JUMP TO ITSELF
                         a_dm_in_2 = 0;
                         npc_reg=pc_reg+4;
+                        we_dm_in_1 = 0;
+                        d_dm_in = 0;
                     end
                     endcase
             
@@ -458,6 +482,8 @@ IM your_im (
                 CTL_reg = 32'h0000_0000;//JUMP TO ITSELF
                 a_dm_in_2 = 0;
                 npc_reg=pc_reg+4;
+                we_dm_in_1 = 0;
+                d_dm_in = 0;
             end
         endcase
     end
@@ -481,6 +507,9 @@ IM your_im (
         dpra_dm = 0;
         CTL_reg = 32'h0000_0000;//JUMP TO ITSELF
         npc_reg=pc_reg+4;
+        we_dm_in_1 = 0;
+        d_dm_in = 0;
+        a_dm_in_1 = 0;
     end
     end
     
