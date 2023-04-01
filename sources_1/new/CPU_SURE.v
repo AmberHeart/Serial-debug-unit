@@ -312,7 +312,7 @@ IM your_im (
             7'b1101111: begin // jal
                 IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31], IR_reg[31],
-                        IR_reg[31] , IR_reg[19:12], IR_reg[20], IR_reg[30:21]};
+                        IR_reg[31] , IR_reg[19:12], IR_reg[20], IR_reg[30:21], 1'b0};
                 jump=0;
                 A_reg = 0;
                 B_reg = 0;
