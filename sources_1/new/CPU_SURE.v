@@ -389,7 +389,7 @@ IM your_im (
                         A_reg = rd0;
                         B_reg = rd1;
                         Y_reg = 0;
-                        if(A_reg < B_reg) begin
+                        if(A_reg< B_reg) begin
                             jump=1;
                             npc_reg = pc_reg + IMM_reg;
                         end
@@ -406,7 +406,6 @@ IM your_im (
                         dpra_dm = 0;
                         CTL_reg = 32'h0000_0007;
                         a_dm_in_2 = 0;
-                        npc_reg=pc_reg+4;
                     end
                     default: begin
                         IMM_reg = 0;
