@@ -82,13 +82,18 @@ wire [31:0] spo_dm;
 reg [7:0] a_dm_in_1;
 reg [7:0] a_dm_in_2;
 reg [7:0] a_dm;
-reg we_dm_in;
+wire we_dm_in;
+reg we_dm_in_1;
+reg we_dm_in_2;
+wire clk_dm;
+assign clk_dm = (debug ? clk_ld: clk_cpu);
 assign a_dm_in = (debug? a_dm_in_2 : a_dm_in_1);
+assign we_dm_in = (debug ? we_dm_in_2 : we_dm_in_1);
 DM your_dm (
   .a(a_dm_in),        // input wire [7 : 0] a
   .d(d_dm_in),        // input wire [31 : 0] d
   .dpra(dpra_dm),  // input wire [7 : 0] dpra
-  .clk(clk_ld),    // input wire clk
+  .clk(clk_dm),    // input wire clk
   .we(we_dm_in),      // input wire we
   .spo(spo_dm),    // output wire [31 : 0] spo
   .dpo(dpo_dm)    // output wire [31 : 0] dpo
@@ -113,7 +118,8 @@ IM your_im (
             we_rf <= 0;
             wa_in <= 0;
             d_dm_in <= 0;
-            we_dm_in <= 0;
+            we_dm_in_1 <= 0;
+            we_dm_in_2 <=0;
             a_dm_in_1 <= 0;
         end
         else 
@@ -126,35 +132,42 @@ IM your_im (
                         wd<=Y_reg;
                         we_rf<=1;
                         wa_in <= wa;
+                        we_dm_in_1 <= 0;
+
                     end
                     32'h2: begin //sub
                         wd<=Y_reg;
                         we_rf<=1;
                         wa_in <= wa;
+                        we_dm_in_1 <= 0;
                     end
                     32'ha: begin //addi
                         wd<=Y_reg;
                         we_rf<=1;
                         wa_in <= wa;
+                        we_dm_in_1 <= 0;
                     end
                     32'h9: begin //slli
                         wd<=Y_reg;
                         we_rf<=1;
                         wa_in <= wa;
+                        we_dm_in_1 <= 0;
                     end
                     32'h4: begin //lw
                         wd<=Y_reg;
                         we_rf<=1;
                         wa_in <= wa;
+                        we_dm_in_1 <= 0;
                     end
                     32'h3: begin //auipc
                         wd<=Y_reg;
                         we_rf<=1;
                         wa_in <= wa;
+                        we_dm_in_1 <= 0;
                     end
                     32'h5: begin //sw
                         d_dm_in <= d_dm;
-                        we_dm_in <= 1;
+                        we_dm_in_1 <= 1;
                         a_dm_in_1 <= a_dm;
                     end
 
