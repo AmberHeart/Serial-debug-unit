@@ -352,7 +352,7 @@ IM your_im (
             7'b1100011: begin // beq bltu
                 case (IR[14:12])
                     3'b000: begin //beq
-                        IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31], IMM_reg[31],
+                        IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31], IR_reg[31],
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
@@ -380,7 +380,7 @@ IM your_im (
                         a_dm_in_2 = 0;
                     end
                     3'b110: begin //bltu
-                        IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31], IMM_reg[31],
+                        IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31], IR_reg[31],
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
                         IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
