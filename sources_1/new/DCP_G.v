@@ -372,10 +372,15 @@ assign type_rx_G = 0;
         end
     end
     always @(*) begin
+        type_tx_G = 0;
+        dout_G = 0;
+        NS = INIT;
         if(~we) NS =INIT;
+        
         else case (CS)
             INIT: begin
                 if(we) NS = CLK_ON;
+                else NS = INIT;
             end
             CLK_ON: begin
                 if(din_rx == 32'h48 || pc_chk == B_1 || pc_chk == B_2) begin

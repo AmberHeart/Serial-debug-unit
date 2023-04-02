@@ -100,12 +100,16 @@ module DCP_R(
     end
     end
     always@(*)begin
+        type_tx_R = 0;
+        dout_R = 0;
         if(~we) NS =INIT;
         else case(CS)
             INIT: begin
                 if (sel_mode == CMD_R) begin
                     NS = PRINTR;
+
                 end
+                else NS = INIT;
             end
             PRINTR: begin
                 type_tx_R = 0;

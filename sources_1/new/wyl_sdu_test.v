@@ -48,6 +48,7 @@ module SDU_test_wyl(
     wire we_im;
     wire clk_ld;
     wire debug;
+    wire [31:0] data_L;
     CPU_test test_CPU(
         .clk(clk),
         .rstn(rstn),
@@ -66,11 +67,11 @@ module SDU_test_wyl(
         .dout_rf(dout_rf),
         .dout_dm(dout_dm),
         .dout_im(dout_im),
-        .din(din),
         .we_dm(we_dm),
         .we_im(we_im),
-        .clk_ld(clk),
+        .clk_ld(clk_ld),
         .debug(debug)
+        ,.data_L(data_L)
     );
     SDU SDU_wyl(
         .clk(clk),
@@ -92,12 +93,12 @@ module SDU_test_wyl(
         .dout_rf(dout_rf),
         .dout_dm(dout_dm),
         .dout_im(dout_im),
-        .din(din),
         .we_dm(we_dm),
         .we_im(we_im),
         .clk_ld(clk_ld)
         ,.cs(scan_w)
         ,.sel(print_w)
         ,.debug(debug)
+        ,.data_L(data_L)
     );
 endmodule

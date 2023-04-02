@@ -110,10 +110,14 @@ module DCP_B(
         end
     end
     always@(*) begin
+        type_tx_B = 1;
+        dout_B = 0;
+        NS = INIT;
         if(~we) NS = INIT;
         else case(CS)
             INIT:begin
                 if(we) NS = SCAN;
+                else NS = INIT;
             end
             SCAN:begin
                 if(~ack_rx) NS = SCAN;

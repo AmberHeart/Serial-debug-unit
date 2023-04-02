@@ -128,6 +128,8 @@ module DCP_I(
         end
     end
     always @(*) begin
+        type_tx_I = 1;
+        dout_I = 0;
         if (~we) NS = INIT;
         else case(CS)
             INIT: begin

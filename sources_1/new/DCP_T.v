@@ -393,10 +393,15 @@ module DCP_T(
         end
     end
     always @(*) begin
+        dout_T = 0;
+        NS = INIT;
+        type_tx_T = 0;
         if(~we) NS =INIT;
         else case (CS)
+            
             INIT: begin
                 if(we) NS = CLK_RST;
+                else NS = INIT;
             end
             CLK_RST: begin
                 NS = CLK_ON;

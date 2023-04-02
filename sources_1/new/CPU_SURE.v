@@ -16,11 +16,11 @@ module CPU_test(
     output reg [31:0] dout_rf,
     output reg [31:0] dout_dm,
     output reg [31:0] dout_im,
-    input [31:0] din,
     input we_dm,
     input we_im,
     input clk_ld,
-    input debug
+    input debug,
+    input [31:0] data_L
 );
     reg jump=0;
     reg [31:0] npc_reg= 32'h0000_3000;
@@ -62,7 +62,7 @@ module CPU_test(
     reg [4:0] wa_in;
     register_file regfile1(
         .rstn(rstn),
-        .clk(clk),
+        .clk(clk_cpu),
         .ra0(ra0),
         .ra1(ra1),
         .rd0(rd0),
@@ -75,6 +75,7 @@ module CPU_test(
 
 reg [7:0] dpra_dm;
 reg [31:0] d_dm;
+//wire [31:0] d_im ;
 reg [31:0] d_dm_in;
 wire [31:0] dpo_dm;
 wire [7:0] a_dm_in;
@@ -89,6 +90,7 @@ wire clk_dm;
 assign clk_dm = (debug ? clk_ld: clk_cpu);
 assign a_dm_in = (debug? a_dm_in_2 : a_dm_in_1);
 assign we_dm_in = (debug ? we_dm_in_2 : we_dm_in_1);
+//assign d_im = data_L;
 DM your_dm (
   .a(a_dm_in),        // input wire [7 : 0] a
   .d(d_dm_in),        // input wire [31 : 0] d
@@ -103,7 +105,7 @@ reg [7:0] a_im_in;
 wire [31:0] spo_im;
 IM your_im (
   .a(a_im_in),        // input wire [7 : 0] a
-  .d(d_im),        // input wire [31 : 0] d
+  .d(data_L),        // input wire [31 : 0] d
   .dpra(pc[9:2]),  // input wire [7 : 0] dpra
   .clk(clk_ld),    // input wire clk
   .we(we_im),      // input wire we
@@ -114,54 +116,11 @@ IM your_im (
     always@(posedge clk_cpu or negedge rstn)begin
         if(~rstn) begin
             pc_reg <= 32'h0000_3000; //
-            wd <= 0;
-            we_rf <= 0;
-            wa_in <= 0;
-            we_dm_in_2 <=0;
         end
         else 
         begin
             pc_reg <= npc_reg;
             
-            
-                case(CTL_reg) 
-                    32'h1: begin //add
-                        wd<=Y_reg;
-                        we_rf<=1;
-                        wa_in <= wa;
-
-                    end
-                    32'h2: begin //sub
-                        wd<=Y_reg;
-                        we_rf<=1;
-                        wa_in <= wa;
-                    end
-                    32'ha: begin //addi
-                        wd<=Y_reg;
-                        we_rf<=1;
-                        wa_in <= wa;
-                    end
-                    32'h9: begin //slli
-                        wd<=Y_reg;
-                        we_rf<=1;
-                        wa_in <= wa;
-                    end
-                    32'h4: begin //lw
-                        wd<=Y_reg;
-                        we_rf<=1;
-                        wa_in <= wa;
-                    end
-                    32'h3: begin //auipc
-                        wd<=Y_reg;
-                        we_rf<=1;
-                        wa_in <= wa;
-                     end
-                    // 32'h5: begin //sw
-                    //     a_dm_in_1 <= a_dm;
-                    // end
-
-
-                endcase
         end
     end
     always@(*) begin
@@ -169,7 +128,10 @@ IM your_im (
             dout_dm = 32'h0000_0000;
             dout_im = 32'h0000_0000;
             dout_rf = 32'h0000_0000;
+            we_dm_in_2 = 0;
             IR_reg=dpo_im;
+            wd = Y_reg;
+            wa_in = wa;
         case (IR_reg[6:0])
             7'b0110011:begin //add sub 
                 case (IR[30])
@@ -193,6 +155,7 @@ IM your_im (
                         we_dm_in_1 = 0;
                         d_dm_in = 0;
                         a_dm_in_1 = 0;
+                        we_rf = 1;
                     end
                     1: begin //sub
                         
@@ -214,6 +177,7 @@ IM your_im (
                         we_dm_in_1 = 0;
                         d_dm_in = 0;
                         a_dm_in_1 = 0;
+                        we_rf = 1;
                     end
                     endcase
                     
@@ -243,6 +207,7 @@ IM your_im (
                         we_dm_in_1 = 0;
                         d_dm_in = 0;
                         a_dm_in_1 = 0;
+                        we_rf = 1;
                     end
                     3'b001: begin //slli
                         IMM_reg = {27'h0,IR_reg[24:20]};
@@ -263,6 +228,7 @@ IM your_im (
                         we_dm_in_1 = 0;
                         d_dm_in = 0;
                         a_dm_in_1 = 0;
+                        we_rf = 1;
                     end
                     default: begin
                         IMM_reg = 0;
@@ -283,6 +249,7 @@ IM your_im (
                         we_dm_in_1 = 0;
                         d_dm_in = 0;
                         a_dm_in_1 = 0;
+                        we_rf = 0;
                     end
                     endcase
             end
@@ -311,6 +278,7 @@ IM your_im (
                 we_dm_in_1 = 0;
                 d_dm_in = 0;
                 a_dm_in_1 = 0;
+                we_rf = 1;
             end
             7'b0010111: begin // auipc
                 IMM_reg = {IR_reg[31:12],12'h0};
@@ -331,6 +299,7 @@ IM your_im (
                 we_dm_in_1 = 0;
                 d_dm_in = 0;
                 a_dm_in_1 = 0;
+                we_rf = 1;
             end
             7'b1101111: begin // jal
                 IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
@@ -353,6 +322,7 @@ IM your_im (
                 we_dm_in_1 = 0;
                 d_dm_in = 0;
                 a_dm_in_1 = 0;
+                we_rf = 1;
             end
             7'b0100011: begin // sw
                 IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
@@ -377,9 +347,11 @@ IM your_im (
                 we_dm_in_1 = 1;
                 d_dm_in = d_dm;
                 a_dm_in_1 = a_dm;
+                we_rf = 0;
             end
             7'b1100011: begin // beq bltu
                 a_dm_in_1 = 0;
+                we_rf = 0;
                 case (IR[14:12])
                     3'b000: begin //beq
                         IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31], IR_reg[31],
@@ -480,10 +452,12 @@ IM your_im (
                 d_dm = 0;
                 dpra_dm = 0;
                 CTL_reg = 32'h0000_0000;//JUMP TO ITSELF
-                a_dm_in_2 = 0;
+                a_dm_in_2 = addr[7:0];
                 npc_reg=pc_reg+4;
                 we_dm_in_1 = 0;
                 d_dm_in = 0;
+                a_dm_in_1 = 0;
+                we_rf = 0;
             end
         endcase
     end
@@ -508,8 +482,12 @@ IM your_im (
         CTL_reg = 32'h0000_0000;//JUMP TO ITSELF
         npc_reg=pc_reg+4;
         we_dm_in_1 = 0;
-        d_dm_in = 0;
+        d_dm_in = data_L;
         a_dm_in_1 = 0;
+        we_dm_in_2 =we_dm;
+        we_rf = 0;
+        wd = 0;
+        wa_in = 0;
     end
     end
     

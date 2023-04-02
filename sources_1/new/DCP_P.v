@@ -361,10 +361,14 @@ module DCP_P(
         end
     end
     always @(*) begin
+        type_tx_P = 0;
+        dout_P = 0;
+        NS = INIT;
         if(~we) NS =INIT;
         else case (CS)
             INIT: begin
                 if(we) NS = PRINT_NPC;
+                else NS = INIT;
             end
             PRINT_NPC: begin //ASCII_NPC <= 32'h4E50433D;//NPC=
                 if(count_NPC == 0) begin
