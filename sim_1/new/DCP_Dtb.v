@@ -23,7 +23,7 @@ module DCP_Dtb(
     output reg [7:0] dout_D*/
 
     reg clk =0;
-    reg rst;
+    reg rstn;
     
     wire finish;
     wire [31:0] addr_D;
@@ -41,7 +41,7 @@ module DCP_Dtb(
 
     DCP_D DCP_D_TB(
         .clk(clk),
-        .rst(rst),
+        .rstn(rstn),
         .sel_mode(8'h44),
         .CMD_D(8'h44),
         .finish_D(finish),
@@ -61,9 +61,9 @@ module DCP_Dtb(
 
 
     initial begin
-        rst=0;
-        #2 rst =1;
-        #2 rst =0;
+        rstn=1;
+        #2 rstn =0;
+        #2 rstn =1;
         #2 ack_rx = 0;
         din_rx = 32'h00000123;
         dout_dm= 32'h00000716;

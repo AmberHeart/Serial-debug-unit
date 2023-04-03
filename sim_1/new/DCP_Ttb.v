@@ -13,6 +13,7 @@ module DCP_Ttb(
     reg [31:0] B;
     reg [31:0] Y;
     reg [31:0] MDR;
+    wire [31:0] dout_T;
     reg ack_tx;
     wire clk_cpu;
     DCP_T DCP_TTB(

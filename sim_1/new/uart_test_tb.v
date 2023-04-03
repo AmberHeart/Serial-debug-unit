@@ -2,7 +2,7 @@
 
 module uart_test_tb(
 );
-reg clk,rst;
+reg clk,rstn;
 /*
 module uart_echo(
     input clk,
@@ -15,9 +15,8 @@ module uart_echo(
 // wire txd,rdy_tx;
 reg rxd;
 wire [7:0] d_rx;
-wire [7:0] cnt;
-wire flg,vld_rx;
-uart_rx rx(
+wire vld_rx;
+RX rx(
     /*
     input clk,//100MHZ
     input rst,
@@ -28,18 +27,18 @@ uart_rx rx(
     output flg//process
     */
     .clk(clk),
-    .rst(rst),
+    .rstn(rstn),
     .rxd(rxd),
     .rdy_rx(1),
     .d_rx(d_rx),
     .vld_rx(vld_rx)
 );
 initial begin
-    clk=0;rst=0;rxd=1;
+    clk=0;rstn=1;rxd=1;
     #1;
-    rst=1;rxd=1;
+    rstn=0;rxd=1;
     #1;
-    rst=0;rxd=1;
+    rstn=1;rxd=1;
     #170;
     rxd=0;//0
     #16;
