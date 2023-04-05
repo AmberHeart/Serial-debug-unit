@@ -100,6 +100,9 @@ module DCP_R(
     end
     end
     always@(*)begin
+        type_tx_R = 0;
+        dout_R = 0;
+        NS = INIT;
         if(~we) NS =INIT;
         else case(CS)
             INIT: begin

@@ -24,13 +24,11 @@ module DCP(
     input [31:0] dout_rf,
     input [31:0] dout_dm,
     input [31:0] dout_im,
-    output reg [31:0] din,
+    output [31:0] din,
     output we_dm,
     output we_im,
     output reg clk_ld
     );
-    assign we_dm = 0;
-    assign we_im = 0;
     wire finish_G;
     //instantiate SCAN and PRINT
     reg type_rx,req_rx;
@@ -80,8 +78,6 @@ module DCP(
     parameter CMD_G = 8'h47; //
     parameter CMD_H = 8'h48; //
     parameter CMD_L = 8'h4C; //
-    parameter CMD_LI = 8'h69; //
-    parameter CMD_LD = 8'h64; //
 
     // current state <= next state
     always@(posedge clk or negedge rstn)
@@ -141,6 +137,7 @@ module DCP(
                         CMD_T: sel_mode <= CMD_T;
                         CMD_B: sel_mode <= CMD_B;
                         CMD_G: sel_mode <= CMD_G;
+                        CMD_L: sel_mode <= CMD_L;
                         default: sel_mode <= FAIL;
                     endcase
                 end
@@ -289,7 +286,30 @@ module DCP(
         .addr_R(addr_R),
         .dout_rf(dout_rf),
         .dout_R(dout_R)
-        );
+    );
+
+    wire finish_L;
+    wire [31:0] dout_L;
+    wire [31:0] addr_L;
+    wire req_rx_L, type_rx_L;
+    wire req_tx_L, type_tx_L;
+    DCP_L(
+        .clk(clk), .rstn(rstn),
+        .sel_mode(sel_mode),
+        .CMD_L(CMD_L),
+        .finish_L(finish_L),
+        .addr_L(addr_L),
+        .din_rx(din_rx),
+        .data_L(din),
+        .ack_rx(ack_rx), .flag_rx(flag_rx),
+        .req_tx_L(req_tx_L), .type_tx_L(type_tx_L),
+        .req_rx_L(req_rx_L), .type_rx_L(type_rx_L),
+        .ack_tx(ack_tx),
+        .dout_L(dout_L),
+        .we_dm(we_dm),
+        .we_im(we_im),
+        .clk_ld(clk_ld)
+    );
 
     // sel data from child modules
     always@(*) // sel print data
@@ -367,6 +387,16 @@ module DCP(
                 dout_tx = dout_G;
                 finish = finish_G;
                 clk_cpu=clk_cpu_G;
+            end
+            CMD_L: begin
+                req_rx = req_rx_L;
+                type_rx = type_rx_L;
+                req_tx = req_tx_L;
+                type_tx = type_tx_L;
+                dout_tx = dout_L;
+                addr = addr_L;
+                finish = finish_L;
+                clk_cpu = 0;
             end
             FAIL: begin
                 req_rx = 0;

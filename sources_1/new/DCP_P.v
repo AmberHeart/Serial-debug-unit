@@ -346,6 +346,9 @@ module DCP_P(
         end
     end
     always @(*) begin
+        type_tx_P = 0;
+        dout_P = 0;
+        NS = INIT;
         if(~we) NS =INIT;
         else case (CS)
             INIT: begin

@@ -392,6 +392,9 @@ module DCP_T(
         end
     end
     always @(*) begin
+        dout_T = 0;
+        NS = INIT;
+        type_tx_T = 0;
         if(~we) begin
             NS =INIT;
             type_tx_T = 0;

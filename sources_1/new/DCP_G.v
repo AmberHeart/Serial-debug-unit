@@ -357,6 +357,9 @@ assign type_rx_G = 0;
         end
     end
     always @(*) begin
+        type_tx_G = 0;
+        dout_G = 0;
+        NS = INIT;
         if(~we) NS =INIT;
         else case (CS)
             INIT: begin
