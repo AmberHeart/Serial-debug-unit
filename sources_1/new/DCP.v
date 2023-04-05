@@ -27,7 +27,7 @@ module DCP(
     output [31:0] din,
     output we_dm,
     output we_im,
-    output reg clk_ld
+    output clk_ld
     );
     wire finish_G;
     //instantiate SCAN and PRINT
