@@ -24,8 +24,7 @@ module CPU_SDU(
     input clk,
     input rstn,
     input rxd,
-    output txd,
-    output [7:0] CNT
+    output txd
     );
     wire clk_cpu;
     wire [31:0] pc_chk;
@@ -67,8 +66,7 @@ module CPU_SDU(
         .I_write_data(din),
         .D_we(we_dm),
         .I_we(we_im),
-        .clk_ld(clk_ld),
-        .CNT(CNT)
+        .clk_ld(clk_ld)
     );
     SDU SDU(
         .clk(clk),

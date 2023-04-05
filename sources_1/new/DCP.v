@@ -59,7 +59,6 @@ module DCP(
     reg finish;
     reg [7:0] curr_state;
     reg [7:0] next_state;
-    assign cs = curr_state;
     parameter INIT = 8'h00; // initialize
     parameter REQ_1ST = 8'h01; // read first character
     parameter WAIT = 8'h02; // wait for child mode
