@@ -25,7 +25,6 @@ module DCP_P(
     output reg req_tx_P,
     output reg type_tx_P,
     output reg [31:0] dout_P
-    ,output [4:0] cs 
 );
 
     parameter [4:0]
@@ -613,5 +612,4 @@ module DCP_P(
 
             endcase
     end
-    assign cs=CS;
 endmodule

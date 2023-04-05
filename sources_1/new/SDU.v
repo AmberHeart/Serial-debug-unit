@@ -20,7 +20,6 @@ module SDU(
     input [31:0] dout_rf,
     input [31:0] dout_dm,
     input [31:0] dout_im,
-    input [1:0] sw,
     output [31:0] din,
     output we_dm,
     output we_im,

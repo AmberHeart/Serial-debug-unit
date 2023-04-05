@@ -83,6 +83,7 @@ module DCP_L(
                     end
                 end
                 SCAN2:begin
+                    {we_dm, we_im} <= {we_dm, we_im};
                     clk_ld<=0;
                     if(~ack_rx) begin
                         req_rx_L <= 1;
@@ -99,13 +100,16 @@ module DCP_L(
                     end
                 end
                 INPUT: begin
+                    {we_dm, we_im} <= {we_dm, we_im};
                     clk_ld<=1;
                 end
                 WAIT: begin
+                    {we_dm, we_im} <= {we_dm, we_im};
                     clk_ld <= 0;
                     addr_L <= count_DATA;
                 end
                 PRINT_FINISH: begin
+                    {we_dm, we_im} <= {we_dm, we_im};
                     clk_ld <= 0;
                     if (count_PRINT_FINISH  < 5) begin
                         if (ack_tx) begin 
@@ -123,6 +127,7 @@ module DCP_L(
                     end
                 end
                 FINISH: begin
+                    {we_dm, we_im} <= {we_dm, we_im};
                     clk_ld <= 0;
                     if (count_FINISH == 0) begin
                         if (ack_tx) begin 
@@ -141,6 +146,7 @@ module DCP_L(
                     end
                 end
                 default: begin
+                    {we_dm, we_im} <= {we_dm, we_im};
                     finish_L <= 0;
                     req_tx_L <= 0;
                     req_rx_L <= 0;
@@ -167,8 +173,11 @@ always@(*) begin
         end
         SCAN1: begin
             type_rx_L = 0;
-            if(~ack_rx) NS = SCAN1;
-            else NS = SCAN2;
+            if(we) begin
+                if(~ack_rx) NS = SCAN1;
+                else NS = SCAN2;
+            end
+            else NS = INIT;
         end
         SCAN2: begin
             type_rx_L = 1;

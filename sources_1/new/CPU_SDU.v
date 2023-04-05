@@ -74,7 +74,7 @@ module CPU_SDU(
         .rxd(rxd),
         .txd(txd),
         .clk_cpu(clk_cpu),
-        .pc_chk(pc),
+        .pc_chk(pc_chk),
         .npc(npc),
         .pc(pc),
         .IR(IR),
