@@ -96,7 +96,7 @@ module DCP_T(
     reg [2:0] count_MDR=0;
     reg count_FINISH =0;
     wire we;
-    assign we = (sel_mode == CMD_T);
+    assign we = (sel_mode == CMD_T) ? 1 : 0;
     always @(posedge clk or negedge rstn) begin
         if(~rstn) begin
             CS<=INIT;
@@ -392,17 +392,27 @@ module DCP_T(
         end
     end
     always @(*) begin
-        if(~we) NS =INIT;
+        if(~we) begin
+            NS =INIT;
+            type_tx_T = 0;
+            dout_T = 0;
+        end
         else case (CS)
             INIT: begin
+                type_tx_T = 0;
                 if(we) NS = CLK_ON;
+                dout_T = 0;
             end
             CLK_ON: begin
+                dout_T = 0;
                 if (we) NS = CLK_OFF;
                 else NS = INIT;
+                type_tx_T = 0;
             end
             CLK_OFF: begin
+                dout_T = 0;
                 NS = PRINT_NPC;
+                type_tx_T = 0;
             end
             PRINT_NPC: begin //ASCII_NPC <= 32'h4E50433D;//NPC=
                 if(count_NPC == 0) begin
@@ -659,7 +669,11 @@ module DCP_T(
                     else NS = FINISH;
                 end
             end
-
+            default: begin
+                dout_T = 0;
+                NS = INIT;
+                type_tx_T = 0;
+            end
 
             endcase
     end

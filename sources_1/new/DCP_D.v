@@ -17,10 +17,8 @@ module DCP_D(
     output type_rx_D,
     output reg req_tx_D,
     output reg type_tx_D,
-    output reg [31:0] dout_D,
-    output [7:0] scan
+    output reg [31:0] dout_D
 
-    ,output [2:0]cs
 );
 // finite state machine
     parameter [2:0]
@@ -37,7 +35,6 @@ module DCP_D(
     reg [31:0] last_addr_D = 0;
     assign type_rx_D = 1;
     //wire flag_rx;
-    assign cs = CS;
     //wire [31:0] din_rx;
     //reg [31:0] dout_D;
     reg [31:0] cur_addr; //keep the address of data to print
@@ -48,7 +45,6 @@ module DCP_D(
     wire we;
     assign we = (sel_mode == CMD_D);
 
-    assign scan = ack_rx?din_rx[7:0]:scan;
     always @(posedge clk or negedge rstn) begin
         if(~rstn)begin
             CS <= INIT;
@@ -143,6 +139,8 @@ module DCP_D(
     end
 
     always @(*) begin
+        type_tx_D = 0;
+        dout_D = 0;
         if (~we) NS = INIT;
         else case(CS)
             INIT: begin

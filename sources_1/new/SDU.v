@@ -26,8 +26,6 @@ module SDU(
     output we_im,
     output clk_ld
 );
-    assign we_dm =0;
-    assign we_im =0;
     wire div_16_9600_clk;
     DIV_RX_CLK div_rx_clk(
         .clk(clk),

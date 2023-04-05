@@ -25,11 +25,12 @@ module DCP(
     input [31:0] dout_dm,
     input [31:0] dout_im,
     output reg [31:0] din,
-    output reg we_dm,
-    output reg we_im,
+    output we_dm,
+    output we_im,
     output reg clk_ld
     );
-    
+    assign we_dm = 0;
+    assign we_im = 0;
     wire finish_G;
     //instantiate SCAN and PRINT
     reg type_rx,req_rx;
@@ -175,9 +176,7 @@ module DCP(
         .ack_tx(ack_tx),
         .req_rx_D(req_rx_D), .type_rx_D(type_rx_D),
         .req_tx_D(req_tx_D), .type_tx_D(type_tx_D),
-        .dout_D(dout_D),
-        .scan(0),
-        .cs(cs_D)
+        .dout_D(dout_D)
     );
     
     wire req_rx_I,req_tx_I,type_rx_I,type_tx_I;
@@ -214,7 +213,6 @@ module DCP(
         .ack_tx(ack_tx), .type_tx_P(type_tx_P),
         .req_tx_P(req_tx_P),
         .dout_P(dout_P)
-        ,.cs(cs_P)
     );
 
     wire req_tx_T, type_tx_T;
@@ -286,10 +284,6 @@ module DCP(
         .sel_mode(sel_mode),
         .CMD_R(CMD_R),
         .finish_R(finish_R),
-        .din_rx(din_rx),
-        .req_rx_R(req_rx_R), .type_rx_R(type_rx_R),
-        .flag_rx(flag_rx),
-        .ack_rx(ack_rx),
         .req_tx_R(req_tx_R), .type_tx_R(type_tx_R),
         .ack_tx(ack_tx),
         .addr_R(addr_R),
@@ -300,6 +294,9 @@ module DCP(
     // sel data from child modules
     always@(*) // sel print data
     begin
+    addr = 0;
+    type_rx = 0;
+    req_rx = 0;
         case(sel_mode)
             INIT: begin
                 req_rx = req_rx_1ST;
@@ -332,8 +329,6 @@ module DCP(
                 clk_cpu=0;
             end
             CMD_R: begin
-                req_rx = req_rx_R;
-                type_rx = type_rx_R;
                 req_tx = req_tx_R;
                 type_tx = type_tx_R;
                 dout_tx = dout_R;
