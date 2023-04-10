@@ -32,13 +32,22 @@ module SDU_test_wyl(
     wire [31:0] pc_chk;
     wire [31:0] npc;
     wire [31:0] pc;
-    wire [31:0] IR;
-    wire [31:0] IMM;
-    wire [31:0] CTL;
-    wire [31:0] A;
-    wire [31:0] B;
-    wire [31:0] Y;
-    wire [31:0] MDR;
+    wire [31:0] ir;
+    wire [31:0] pcd;
+    wire [31:0] ire;
+    wire [31:0] imm;
+    wire [31:0] a;
+    wire [31:0] b;
+    wire [31:0] pce;
+    wire [31:0] ctr;
+    wire [31:0] irm;
+    wire [31:0] mdw;
+    wire [31:0] y;
+    wire [31:0] ctrm;
+    wire [31:0] irw;
+    wire [31:0] yw;
+    wire [31:0] mdr;
+    wire [31:0] ctrw;
     wire [31:0] addr;
     wire [31:0] dout_rf;
     wire [31:0] dout_dm;
@@ -48,21 +57,29 @@ module SDU_test_wyl(
     wire we_im;
     wire clk_ld;
     wire debug;
-    wire [31:0] data_L;
     CPU_test test_CPU(
         .clk(clk),
         .rstn(rstn),
         .clk_cpu(clk_cpu),
         .pc_chk(pc_chk),
-        .npc(npc),
-        .pc(pc),
-        .IR(IR),
-        .IMM(IMM),
-        .CTL(CTL),
-        .A(A),
-        .B(B),
-        .Y(Y),
-        .MDR(MDR),
+                .npc(npc),
+.pc(pc),
+.ir(ir),
+.pcd(pcd),
+.ire(ire),
+.imm(imm),
+.a(a),
+.b(b),
+.pce(pce),
+.ctr(ctr),
+.irm(irm),
+.mdw(mdw),
+.y(y),
+.ctrm(ctrm),
+.irw(irw),
+.yw(yw),
+.mdr(mdr),
+.ctrw(ctrw),
         .addr(addr),
         .dout_rf(dout_rf),
         .dout_dm(dout_dm),
@@ -71,7 +88,7 @@ module SDU_test_wyl(
         .we_im(we_im),
         .clk_ld(clk_ld),
         .debug(debug)
-        ,.data_L(data_L)
+        ,.din(din)
     );
     SDU SDU_wyl(
         .clk(clk),
@@ -79,16 +96,25 @@ module SDU_test_wyl(
         .rxd(rxd),
         .txd(txd),
         .clk_cpu(clk_cpu),
-        .pc_chk(pc),
+        .pc_chk(pce),
         .npc(npc),
-        .pc(pc),
-        .IR(IR),
-        .IMM(IMM),
-        .CTL(CTL),
-        .A(A),
-        .B(B),
-        .Y(Y),
-        .MDR(MDR),
+.pc(pc),
+.ir(ir),
+.pcd(pcd),
+.ire(ire),
+.imm(imm),
+.a(a),
+.b(b),
+.pce(pce),
+.ctr(ctr),
+.irm(irm),
+.mdw(mdw),
+.y(y),
+.ctrm(ctrm),
+.irw(irw),
+.yw(yw),
+.mdr(mdr),
+.ctrw(ctrw),
         .addr(addr),
         .dout_rf(dout_rf),
         .dout_dm(dout_dm),
@@ -99,6 +125,6 @@ module SDU_test_wyl(
         ,.cs(scan_w)
         ,.sel(print_w)
         ,.debug(debug)
-        ,.data_L(data_L)
+        ,.din(din)
     );
 endmodule

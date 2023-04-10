@@ -34,7 +34,6 @@ module DCP_D(
     reg [31:0] last_addr_D = 0;
     assign type_rx_D = 1;
     //wire flag_rx;
-    assign cs = CS;
     //wire [31:0] din_rx;
     //reg [31:0] dout_D;
     reg [31:0] cur_addr; //keep the address of data to print

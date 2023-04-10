@@ -7,15 +7,26 @@ module SDU(
     output txd,
     output clk_cpu,
     input [31:0] pc_chk,
+
     input [31:0] npc,
     input [31:0] pc,
-    input [31:0] IR,
-    input [31:0] IMM,
-    input [31:0] CTL,    
-    input [31:0] A,
-    input [31:0] B,
-    input [31:0] Y,
-    input [31:0] MDR,
+    input [31:0] ir,
+    input [31:0] pcd,
+    input [31:0] ire,
+    input [31:0] imm,
+    input [31:0] a,
+    input [31:0] b,
+    input [31:0] pce,
+    input [31:0] ctr,
+    input [31:0] irm,
+    input [31:0] mdw,
+    input [31:0] y,
+    input [31:0] ctrm,
+    input [31:0] irw,
+    input [31:0] yw,
+    input [31:0] mdr,
+    input [31:0] ctrw,
+
     output [31:0] addr,
     input [31:0] dout_rf,
     input [31:0] dout_dm,
@@ -27,7 +38,7 @@ module SDU(
     ,output [7:0] cs
     ,output [7:0] sel
     ,output debug
-    ,output [31:0] data_L
+    ,output [31:0] din
 );
     wire div_16_9600_clk;
     DIV_RX_CLK div_rx_clk(
@@ -62,14 +73,31 @@ module SDU(
         .clk_cpu(clk_cpu),
         .pc_chk(pc_chk),
         .npc(npc),
-        .pc(pc),
-        .IR(IR),
-        .CTL(CTL),
-        .IMM(IMM),
-        .A(A),
-        .B(B),
-        .Y(Y),
-        .MDR(MDR),
+.pc(pc),
+.ir(ir),
+.pcd(pcd),
+.ire(ire),
+.imm(imm),
+.a(a),
+.b(b),
+.pce(pce),
+.ctr(ctr),
+.irm(irm),
+.mdw(mdw),
+.y(y),
+.ctrm(ctrm),
+.irw(irw),
+.yw(yw),
+.mdr(mdr),
+.ctrw(ctrw),
+        
+        
+        
+        
+        
+        
+        
+        
         .addr(addr),
         .dout_rf(dout_rf),
         .dout_dm(dout_dm),
@@ -78,9 +106,7 @@ module SDU(
         .we_im(we_im),
         .clk_ld(clk_ld)
         //test
-        ,.cs(cs)
-        ,.sel(sel)
         ,.debug(debug)
-        ,.data_L(data_L)
+        ,.din(din)
         );
 endmodule

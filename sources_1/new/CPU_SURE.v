@@ -2,16 +2,25 @@ module CPU_test(
     input clk,
     input rstn,
     input clk_cpu,
-    output [31:0] pc_chk,
+    output [31:0] pc_chk,    
     output [31:0] npc,
     output [31:0] pc,
-    output [31:0] IR,
-    output [31:0] CTL,
-    output [31:0] A,
-    output [31:0] B,
-    output [31:0] Y,
-    output [31:0] MDR,
-    output [31:0] IMM,
+    output [31:0] ir,
+    output [31:0] pcd,
+    output [31:0] ire,
+    output [31:0] imm,
+    output [31:0] a,
+    output [31:0] b,
+    output [31:0] pce,
+    output [31:0] ctr,
+    output [31:0] irm,
+    output [31:0] mdw,
+    output [31:0] y,
+    output [31:0] ctrm,
+    output [31:0] irw,
+    output [31:0] yw,
+    output [31:0] mdr,
+    output [31:0] ctrw,
     input [31:0] addr,
     output reg [31:0] dout_rf,
     output reg [31:0] dout_dm,
@@ -20,12 +29,12 @@ module CPU_test(
     input we_im,
     input clk_ld,
     input debug,
-    input [31:0] data_L
+    input [31:0] din
 );
     reg jump=0;
     reg [31:0] npc_reg= 32'h0000_3000;
     reg [31:0] pc_reg;
-    reg [31:0] IR_reg;
+    reg [31:0] ir_reg;
     reg [31:0] CTL_reg;
      //0:nothing    1:add   2:sub
      //3:auipc  4:lw   5:sw
@@ -34,7 +43,7 @@ module CPU_test(
     reg [31:0] A_reg;
     reg [31:0] B_reg;
     reg [31:0] Y_reg;
-    reg [31:0] IMM_reg;
+    reg [31:0] imm_reg;
     reg [31:0] MDR_reg;
   
     //wire clk_cpu_ps;
@@ -46,13 +55,22 @@ module CPU_test(
     assign pc_chk = pc_reg;
     assign npc = npc_reg;
     assign pc = pc_reg;
-    assign IR = IR_reg;
-    assign CTL = CTL_reg;
-    assign A = A_reg;
-    assign B = B_reg;
-    assign Y = Y_reg;
-    assign IMM = IMM_reg;
-    assign MDR = MDR_reg;
+    assign ir = ir_reg;
+    assign ctr = CTL_reg;
+    assign a = A_reg;
+    assign b = B_reg;
+    assign y = Y_reg;
+    assign imm = imm_reg;
+    assign pcd = 32'h0000_1001;
+    assign ire = 32'h0000_1002;
+    assign pce = 32'h0000_1003;
+    assign irm = 32'h0000_1004;
+    assign mdw = 32'h0000_1005;
+    assign ctrm = 32'h0000_1006;
+    assign irw = 32'h0000_1007;
+    assign yw = 32'h0000_1008;
+    assign mdr = 32'h0000_1009;
+    assign ctrw = 32'h0000_1010;
 
 //register
     reg [4:0] ra0,ra1,wa;
@@ -90,7 +108,7 @@ wire clk_dm;
 assign clk_dm = (debug ? clk_ld: clk_cpu);
 assign a_dm_in = (debug? a_dm_in_2 : a_dm_in_1);
 assign we_dm_in = (debug ? we_dm_in_2 : we_dm_in_1);
-//assign d_im = data_L;
+//assign d_im = din;
 DM your_dm (
   .a(a_dm_in),        // input wire [7 : 0] a
   .d(d_dm_in),        // input wire [31 : 0] d
@@ -105,7 +123,7 @@ reg [7:0] a_im_in;
 wire [31:0] spo_im;
 IM your_im (
   .a(a_im_in),        // input wire [7 : 0] a
-  .d(data_L),        // input wire [31 : 0] d
+  .d(din),        // input wire [31 : 0] d
   .dpra(pc[9:2]),  // input wire [7 : 0] dpra
   .clk(clk_ld),    // input wire clk
   .we(we_im),      // input wire we
@@ -124,31 +142,32 @@ IM your_im (
         end
     end
     always@(*) begin
+        MDR_reg = dpo_dm;
         if(~debug) begin
             dout_dm = 32'h0000_0000;
             dout_im = 32'h0000_0000;
             dout_rf = 32'h0000_0000;
             we_dm_in_2 = 0;
-            IR_reg=dpo_im;
+            ir_reg=dpo_im;
             wd = Y_reg;
             wa_in = wa;
-        case (IR_reg[6:0])
+        case (ir_reg[6:0])
             7'b0110011:begin //add sub 
-                case (IR[30])
+                case (ir[30])
                     0: begin //add
                         
-                        IMM_reg = 0;
+                        imm_reg = 0;
                         jump=0;
                         A_reg = rd0;
                         B_reg = rd1;
                         Y_reg = A_reg + B_reg;
                         a_im_in = 0;
-                        ra0 = IR_reg[19:15];
-                        ra1 = IR_reg[24:20];
-                        wa=IR_reg[11:7];
+                        ra0 = ir_reg[19:15];
+                        ra1 = ir_reg[24:20];
+                        wa=ir_reg[11:7];
                         a_dm = 0;
                         d_dm = 0;
-                        dpra_dm = 0;
+                        dpra_dm = Y_reg;
                         CTL_reg = 32'h0000_0001;
                         a_dm_in_2 = 0;
                         npc_reg=pc_reg+4;
@@ -159,18 +178,18 @@ IM your_im (
                     end
                     1: begin //sub
                         
-                        IMM_reg = 0;
+                        imm_reg = 0;
                         jump=0;
                         A_reg = rd0;
                         B_reg = rd1;
                         Y_reg = A_reg - B_reg;
                         a_im_in = 0;
-                        ra0 = IR_reg[19:15];
-                        ra1 = IR_reg[24:20];
-                        wa=IR_reg[11:7];
+                        ra0 = ir_reg[19:15];
+                        ra1 = ir_reg[24:20];
+                        wa=ir_reg[11:7];
                         a_dm = 0;
                         d_dm = 0;
-                        dpra_dm = 0;
+                        dpra_dm = Y_reg;
                         CTL_reg = 32'h0000_0002;
                         a_dm_in_2 = 0;
                         npc_reg=pc_reg+4;
@@ -183,24 +202,24 @@ IM your_im (
                     
             end
             7'b0010011: begin //addi slli
-                case (IR[14:12])
+                case (ir[14:12])
                     3'b000: begin //addi
-                        IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
-                        IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
-                        IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
-                        IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
-                            IR_reg[31:20]};
+                        imm_reg = {ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],
+                        ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],
+                        ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],
+                        ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],
+                            ir_reg[31:20]};
                         jump=0;
                         A_reg = rd0;
                         B_reg = 0;
-                        Y_reg = A_reg + IMM_reg;
+                        Y_reg = A_reg + imm_reg;
                         a_im_in = 0;
-                        ra0 = IR_reg[19:15];
+                        ra0 = ir_reg[19:15];
                         ra1 = 0;
-                        wa=IR_reg[11:7];
+                        wa=ir_reg[11:7];
                         a_dm = 0;
                         d_dm = 0;
-                        dpra_dm = 0;
+                        dpra_dm = Y_reg;
                         CTL_reg = 32'h0000_000a;
                         a_dm_in_2 = 0;
                         npc_reg=pc_reg+4;
@@ -210,18 +229,18 @@ IM your_im (
                         we_rf = 1;
                     end
                     3'b001: begin //slli
-                        IMM_reg = {27'h0,IR_reg[24:20]};
+                        imm_reg = {27'h0,ir_reg[24:20]};
                         jump=0;
                         A_reg = rd0;
                         B_reg = 0;
-                        Y_reg = A_reg << IMM_reg;
+                        Y_reg = A_reg << imm_reg;
                         a_im_in = 0;
-                        ra0 = IR_reg[19:15];
+                        ra0 = ir_reg[19:15];
                         ra1 = 0;
-                        wa=IR_reg[11:7];
+                        wa=ir_reg[11:7];
                         a_dm = 0;
                         d_dm = 0;
-                        dpra_dm = 0;
+                        dpra_dm = Y_reg;
                         CTL_reg = 32'h0000_0009;
                         a_dm_in_2 = 0;
                         npc_reg=pc_reg+4;
@@ -231,7 +250,7 @@ IM your_im (
                         we_rf = 1;
                     end
                     default: begin
-                        IMM_reg = 0;
+                        imm_reg = 0;
                         jump = 0;
                         A_reg = 32'h0000_0000;
                         B_reg = 32'h0000_0000;
@@ -256,22 +275,22 @@ IM your_im (
             
 
             7'b0000011: begin // lw
-                IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
-                        IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
-                        IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
-                        IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
-                            IR_reg[31:20]};
+                imm_reg = {ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],
+                        ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],
+                        ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],
+                        ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],
+                            ir_reg[31:20]};
                 jump=0;
                 A_reg = rd0;
                 B_reg = 0;
                 Y_reg = dpo_dm;
                 a_im_in = 0;
-                ra0 = IR_reg[19:15];
+                ra0 = ir_reg[19:15];
                 ra1 = 0;
-                wa = IR_reg[11:7];
+                wa = ir_reg[11:7];
                 a_dm = 0;
                 d_dm = 0;
-                dpra_dm = A_reg[9:2] + IMM_reg[9:2];
+                dpra_dm = A_reg[9:2] + imm_reg[9:2];
                 CTL_reg = 32'h0000_0004;
                 a_dm_in_2 = 0;
                 npc_reg=pc_reg+4;
@@ -281,15 +300,15 @@ IM your_im (
                 we_rf = 1;
             end
             7'b0010111: begin // auipc
-                IMM_reg = {IR_reg[31:12],12'h0};
+                imm_reg = {ir_reg[31:12],12'h0};
                 jump=0;
                 A_reg = 0;
                 B_reg = 0;
-                Y_reg = pc_reg + IMM_reg;
+                Y_reg = pc_reg + imm_reg;
                 a_im_in = 0;
                 ra0 = 0;
                 ra1 = 0;
-                wa = IR_reg[11:7];
+                wa = ir_reg[11:7];
                 a_dm = 0;
                 d_dm = 0;
                 dpra_dm = 0;
@@ -302,9 +321,9 @@ IM your_im (
                 we_rf = 1;
             end
             7'b1101111: begin // jal
-                IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
-                        IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31], IR_reg[31],
-                        IR_reg[31] , IR_reg[19:12], IR_reg[20], IR_reg[30:21], 1'b0};
+                imm_reg = {ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],
+                        ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31], ir_reg[31],
+                        ir_reg[31] , ir_reg[19:12], ir_reg[20], ir_reg[30:21], 1'b0};
                 jump=0;
                 A_reg = 0;
                 B_reg = 0;
@@ -312,35 +331,35 @@ IM your_im (
                 a_im_in = 0;
                 ra0 = 0;
                 ra1 = 0;
-                wa = IR_reg[11:7];
+                wa = ir_reg[11:7];
                 a_dm = 0;
                 d_dm = 0;
                 dpra_dm = 0;
                 CTL_reg = 32'h0000_0008;
                 a_dm_in_2 = 0;
-                npc_reg=pc_reg+IMM_reg;
+                npc_reg=pc_reg+imm_reg;
                 we_dm_in_1 = 0;
                 d_dm_in = 0;
                 a_dm_in_1 = 0;
                 we_rf = 1;
             end
             7'b0100011: begin // sw
-                IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
-                        IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
-                        IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
-                        IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
-                            IR_reg[31:25],IR_reg[11:7]};
+                imm_reg = {ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],
+                        ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],
+                        ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],
+                        ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],
+                            ir_reg[31:25],ir_reg[11:7]};
                 jump=0;
                 A_reg = rd0;
                 B_reg = rd1;
-                Y_reg = 0;
+                Y_reg = A_reg[9:2] + imm_reg[9:2];
                 a_im_in = 0;
-                ra0 = IR_reg[19:15];
-                ra1 = IR_reg[24:20];
+                ra0 = ir_reg[19:15];
+                ra1 = ir_reg[24:20];
                 wa = 0;
-                a_dm = A_reg[9:2] + IMM_reg[9:2];
+                a_dm = A_reg[9:2] + imm_reg[9:2];
                 d_dm = B_reg;
-                dpra_dm = 0;
+                dpra_dm = A_reg[9:2] + imm_reg[9:2];
                 CTL_reg = 32'h0000_0005;
                 a_dm_in_2 = 0;
                 npc_reg=pc_reg+4;
@@ -352,19 +371,19 @@ IM your_im (
             7'b1100011: begin // beq bltu
                 a_dm_in_1 = 0;
                 we_rf = 0;
-                case (IR[14:12])
+                case (ir[14:12])
                     3'b000: begin //beq
-                        IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31], IR_reg[31],
-                        IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
-                        IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
-                        IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
-                        IR_reg[7] , IR_reg[30:25],IR_reg[11:8],1'b0};
+                        imm_reg = {ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31], ir_reg[31],
+                        ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],
+                        ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],
+                        ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],
+                        ir_reg[7] , ir_reg[30:25],ir_reg[11:8],1'b0};
                         
                         A_reg = rd0;
                         B_reg = rd1;
                         if(A_reg == B_reg) begin
                             jump=1;
-                            npc_reg=pc_reg+IMM_reg;
+                            npc_reg=pc_reg+imm_reg;
                         end
                         else begin
                             jump=0;
@@ -372,8 +391,8 @@ IM your_im (
                         end
                         Y_reg = 0;
                         a_im_in = 0;
-                        ra0 = IR_reg[19:15];
-                        ra1 = IR_reg[24:20];
+                        ra0 = ir_reg[19:15];
+                        ra1 = ir_reg[24:20];
                         wa = 0;
                         a_dm = 0;
                         d_dm = 0;
@@ -385,26 +404,26 @@ IM your_im (
                         
                     end
                     3'b110: begin //bltu
-                        IMM_reg = {IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31], IR_reg[31],
-                        IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
-                        IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
-                        IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],IR_reg[31],
-                        IR_reg[7] , IR_reg[30:25],IR_reg[11:8],1'b0};
+                        imm_reg = {ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31], ir_reg[31],
+                        ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],
+                        ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],
+                        ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],ir_reg[31],
+                        ir_reg[7] , ir_reg[30:25],ir_reg[11:8],1'b0};
                         
                         A_reg = rd0;
                         B_reg = rd1;
                         Y_reg = 0;
                         if(A_reg< B_reg) begin
                             jump=1;
-                            npc_reg = pc_reg + IMM_reg;
+                            npc_reg = pc_reg + imm_reg;
                         end
                         else begin
                             jump=0;
                             npc_reg = pc_reg+4;
                         end
                         a_im_in = 0;
-                        ra0 = IR_reg[19:15];
-                        ra1 = IR_reg[24:20];
+                        ra0 = ir_reg[19:15];
+                        ra1 = ir_reg[24:20];
                         wa = 0;
                         a_dm = 0;
                         d_dm = 0;
@@ -415,7 +434,7 @@ IM your_im (
                         d_dm_in = 0;
                     end
                     default: begin
-                        IMM_reg = 0;
+                        imm_reg = 0;
                         jump = 0;
                         A_reg = 32'h0000_0000;
                         B_reg = 32'h0000_0000;
@@ -439,7 +458,7 @@ IM your_im (
 
 
             default: begin
-                IMM_reg = 0;
+                imm_reg = 0;
                 jump = 0;
                 A_reg = 32'h0000_0000;
                 B_reg = 32'h0000_0000;
@@ -462,8 +481,8 @@ IM your_im (
         endcase
     end
     else begin
-        IR_reg=0;
-        IMM_reg = 0;
+        ir_reg=0;
+        imm_reg = 0;
         jump = 0;
         A_reg = 0;
         B_reg = 0;
@@ -482,7 +501,7 @@ IM your_im (
         CTL_reg = 32'h0000_0000;//JUMP TO ITSELF
         npc_reg=pc_reg+4;
         we_dm_in_1 = 0;
-        d_dm_in = data_L;
+        d_dm_in = din;
         a_dm_in_1 = 0;
         we_dm_in_2 =we_dm;
         we_rf = 0;
@@ -492,3 +511,124 @@ IM your_im (
     end
     
 endmodule
+/*
+module CPU_test(
+    input clk,
+    input rstn,
+    input clk_cpu,
+    output [31:0] pc_chk,
+    output [31:0] npc,
+    output [31:0] pc,
+    output [31:0] ir,
+    output [31:0] pcd,
+    output [31:0] ire,
+    output [31:0] imm,
+    output [31:0] a,
+    output [31:0] b,
+    output [31:0] pce,
+    output [31:0] ctr,
+    output [31:0] irm,
+    output [31:0] mdw,
+    output [31:0] y,
+    output [31:0] ctrm,
+    output [31:0] irw,
+    output [31:0] yw,
+    output [31:0] mdr,
+    output [31:0] ctrw,
+    input [31:0] addr,
+    output reg [31:0] dout_rf,
+    output reg [31:0] dout_dm,
+    output reg [31:0] dout_im,
+    input we_dm,
+    input we_im,
+    input clk_ld,
+    input debug,
+    input [31:0] din
+);
+    
+    //wire clk_cpu_ps;
+    // Posedge_Selector(clk,rstn,clk_cpu,clk_cpu_ps
+    // //input clk, rstn, in,
+    // //output reg out
+    // );
+assign pc_chk=pce;
+assign npc=32'h0000_0000;
+assign pc=32'h0000_0001;
+assign ir=32'h0000_0002;
+assign pcd=32'h0000_0003;
+assign ire=32'h0000_0004;
+assign imm=32'h0000_0005;
+assign a=32'h0000_0006;
+assign b=32'h0000_0007;
+assign pce=32'h0000_0008;
+assign ctr=32'h0000_0009;
+assign irm=32'h0000_000a;
+assign mdw=32'h0000_000b;
+assign y=32'h0000_000c;
+assign ctrm=32'h0000_000d;
+assign irw=32'h0000_000e;
+assign yw=32'h0000_000f;
+assign mdr=32'h0000_0010;
+assign ctrw=32'h0000_0011;
+    
+
+
+//register
+    reg [4:0] ra0,ra1,wa;
+    wire [31:0] rd0,rd1;
+    reg [31:0] wd;
+    reg we_rf;
+    reg [4:0] wa_in;
+    register_file regfile1(
+        .rstn(rstn),
+        .clk(clk_cpu),
+        .ra0(ra0),
+        .ra1(ra1),
+        .rd0(rd0),
+        .rd1(rd1),
+        .wa(wa_in),
+        .wd(wd),
+        .we(we_rf)
+    );
+
+
+reg [7:0] dpra_dm;
+reg [31:0] d_dm;
+//wire [31:0] d_im ;
+reg [31:0] d_dm_in;
+wire [31:0] dpo_dm;
+wire [7:0] a_dm_in;
+wire [31:0] spo_dm;
+reg [7:0] a_dm_in_1;
+reg [7:0] a_dm_in_2;
+reg [7:0] a_dm;
+wire we_dm_in;
+reg we_dm_in_1;
+reg we_dm_in_2;
+wire clk_dm;
+assign clk_dm = (debug ? clk_ld: clk_cpu);
+assign a_dm_in = (debug? a_dm_in_2 : a_dm_in_1);
+assign we_dm_in = (debug ? we_dm_in_2 : we_dm_in_1);
+//assign d_im = din;
+DM your_dm (
+  .a(a_dm_in),        // input wire [7 : 0] a
+  .d(d_dm_in),        // input wire [31 : 0] d
+  .dpra(dpra_dm),  // input wire [7 : 0] dpra
+  .clk(clk_dm),    // input wire clk
+  .we(we_dm_in),      // input wire we
+  .spo(spo_dm),    // output wire [31 : 0] spo
+  .dpo(dpo_dm)    // output wire [31 : 0] dpo
+);
+wire [31:0] dpo_im;
+reg [7:0] a_im_in;
+wire [31:0] spo_im;
+IM your_im (
+  .a(a_im_in),        // input wire [7 : 0] a
+  .d(din),        // input wire [31 : 0] d
+  .dpra(pc[9:2]),  // input wire [7 : 0] dpra
+  .clk(clk_ld),    // input wire clk
+  .we(we_im),      // input wire we
+  .spo(spo_im),    // output wire [31 : 0] spo
+  .dpo(dpo_im)    // output wire [31 : 0] dpo
+);
+endmodule*/

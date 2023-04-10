@@ -6,7 +6,7 @@ module DCP_L(
     output reg finish_L,
     output reg [31:0] addr_L,
     input [31:0] din_rx,
-    output reg [31:0] data_L,
+    output reg [31:0] din,
     input ack_rx,
     input flag_rx,
     input ack_tx,
@@ -91,7 +91,7 @@ module DCP_L(
                         req_rx_L <= 0;
                         if(!flag_rx) 
                             begin
-                            data_L <= din_rx;
+                            din <= din_rx;
                             count_DATA <= count_DATA + 1;
                             count_null <= 0;
                             end
