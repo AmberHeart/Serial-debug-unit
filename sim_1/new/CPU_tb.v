@@ -1,40 +1,58 @@
 module CPU_tb();
+
     reg clk_cpu;
     reg rstn;
     wire [31:0] pc_chk;
     wire [31:0] npc;
     wire [31:0] pc;
-    wire [31:0] IR;
-    wire [31:0] IMM;
-    wire [31:0] CTL;
-    wire [31:0] A;
-    wire [31:0] B;
-    wire [31:0] Y;
-    wire [31:0] MDR;
+    wire [31:0] ir;
+    wire [31:0] pcd;
+    wire [31:0] ire;
+    wire [31:0] imm;
+    wire [31:0] a;
+    wire [31:0] b;
+    wire [31:0] pce;
+    wire [31:0] ctr;
+    wire [31:0] irm;
+    wire [31:0] mdw;
+    wire [31:0] y;
+    wire [31:0] ctrm;
+    wire [31:0] irw;
+    wire [31:0] yw;
+    wire [31:0] mdr;
+    wire [31:0] ctrw;
     wire [31:0] addr;
     wire [31:0] dout_rf;
     wire [31:0] dout_dm;
     wire [31:0] dout_im;
-    wire [31:0] din;
+    reg [31:0] din;
     reg we_dm;
     reg we_im;
     reg clk_ld;
-    reg debug;
-    reg [31:0] data_L;
-    CPU_test test_CPU(
+    reg debug;   
+     CPU_PIPELINE test_CPU(
         .clk(clk),
         .rstn(rstn),
         .clk_cpu(clk_cpu),
         .pc_chk(pc_chk),
         .npc(npc),
         .pc(pc),
-        .IR(IR),
-        .IMM(IMM),
-        .CTL(CTL),
-        .A(A),
-        .B(B),
-        .Y(Y),
-        .MDR(MDR),
+        .ir(ir),
+        .pcd(pcd),
+        .ire(ire),
+        .imm(imm),
+        .a(a),
+        .b(b),
+        .pce(pce),
+        .ctr(ctr),
+        .irm(irm),
+        .mdw(mdw),
+        .y(y),
+        .ctrm(ctrm),
+        .irw(irw),
+        .yw(yw),
+        .mdr(mdr),
+        .ctrw(ctrw),
         .addr(addr),
         .dout_rf(dout_rf),
         .dout_dm(dout_dm),
@@ -43,7 +61,7 @@ module CPU_tb();
         .we_im(we_im),
         .clk_ld(clk_ld),
         .debug(debug)
-        ,.data_L(data_L)
+        ,.din(din)
     );
     initial begin
         clk_cpu = 0;
@@ -54,7 +72,7 @@ module CPU_tb();
         we_im = 0;
         debug = 0;
         clk_ld = 0;
-        data_L = 0;
+        din = 0;
 
 
     end
