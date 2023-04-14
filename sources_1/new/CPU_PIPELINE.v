@@ -151,12 +151,14 @@ IM your_im (
 
 wire PCSrc;
 wire [31:0] Addsum;
+wire stall;
 IF_MOD if_mod(
     .clk_cpu(clk_cpu),
     .rstn(rstn),
     .PCSrc(PCSrc),
     .Addsum(Addsum),
-    .pcd(pcd)
+    .pcd(pcd),
+    .stall(stall)
 );
 
 ID_MOD id_mod(
@@ -171,7 +173,9 @@ ID_MOD id_mod(
     .ire(ire),
     .ctr(ctr),
     .ctrm(ctrm),
-    .ctrw(ctrw)
+    .ctrw(ctrw),
+    .stall(stall),
+    .PCSrc(PCSrc)
 );
 wire [31:0] a_1;
 wire [31:0] b_1;

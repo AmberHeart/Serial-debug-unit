@@ -65,12 +65,15 @@ case(aluop)
         2'b10: begin //slli
             aluout= a << imm[4:0];
         end
+        2'b11: begin //auipc
+            aluout= pce + imm;
+        end
     endcase
         case(branch) 
         0:
         PCSrc = 1'b0;
         1:
-        if(ire[14:12]==3'b000 && a==b || ire[14:12]==3'b110 && a<=b)
+        if(ire[14:12]==3'b000 && a==b || ire[14:12]==3'b110 && a<=b || ire[6:0] == 7'b1101111)
         PCSrc = 1'b1;
         endcase
 
